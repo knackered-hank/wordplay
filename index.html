@@ -2,273 +2,125 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>韓哥填字遊戲 第一期</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>韓哥填字遊戲</title>
     <style>
-        body { font-family: "Microsoft JhengHei", sans-serif; background-color: #f4f1de; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        h1 { color: #3d405b; margin-bottom: 20px; }
+        :root { --bg-color: #fdfaf0; --primary: #e07a5f; --grid-bg: #333; }
+        body { font-family: "Microsoft JhengHei", sans-serif; background-color: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding: 20px; }
         
-        .game-wrapper { display: flex; gap: 40px; align-items: flex-start; justify-content: center; flex-wrap: wrap; }
-        
-        .left-column { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        /* 選單頁面樣式 */
+        .menu-container { max-width: 600px; width: 100%; text-align: center; margin-top: 50px; }
+        .level-card { background: white; margin: 15px 0; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s; text-decoration: none; display: block; color: inherit; }
+        .level-card:hover { transform: translateY(-3px); border: 1px solid var(--primary); }
+        .level-card h2 { margin: 0; color: #3d405b; }
+        .level-card p { margin: 10px 0 0; color: #666; font-size: 14px; }
 
-        #grid { 
-            display: grid; 
-            grid-template-columns: repeat(10, 48px); 
-            grid-template-rows: repeat(10, 48px); 
-            border: 4px solid #333; 
-            background-color: #333; 
-            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-        }
-        
-        .cell { width: 48px; height: 48px; position: relative; box-sizing: border-box; }
-        .white-cell { background-color: white; border: 1px solid #ccc; }
-        .black-cell { background-color: #333; }
-        .cell-text { color: #2d6a4f; pointer-events: none; }
-        .num-label { position: absolute; top: 2px; left: 4px; font-size: 11px; color: #666; font-weight: bold; pointer-events: none; }
-
-        .input-area { 
-            width: 488px; 
-            background: #fff; 
-            padding: 15px; 
-            border-radius: 10px; 
-            display: flex; 
-            gap: 10px; 
-            align-items: center; 
-            border: 2px solid #3d405b;
-            box-sizing: border-box;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        #mainInput { flex-grow: 1; font-size: 18px; padding: 8px; text-align: center; border: 1px solid #ccc; border-radius: 5px; }
-
-        .btn-group { display: flex; gap: 5px; }
-        button { padding: 8px 12px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; color: white; transition: 0.3s; }
-        .btn-check { background: #2d6a4f; }
-        .btn-check:hover { background: #1b4332; }
-        .btn-reset { background: #e07a5f; }
-        .btn-reset:hover { background: #c96b52; }
-
-        .clue-box { 
-            width: 380px; background: white; padding: 25px; border-radius: 12px; 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1); height: 600px; overflow-y: auto; 
-            border-top: 5px solid #e07a5f;
-        }
-        .clue-section h3 { border-bottom: 2px solid #e07a5f; padding-bottom: 8px; color: #3d405b; margin-top: 0; }
-        .clue-item { 
-            margin-bottom: 12px; font-size: 14px; line-height: 1.5; color: #444;
-            cursor: pointer; transition: background 0.2s; padding: 4px; border-radius: 4px; }
-        .clue-num { font-weight: bold; color: #e07a5f; margin-right: 8px; }
-        .clue-item:hover { background-color: #fdf0d5; color: #e07a5f; }
-
-        footer { margin-top: 30px; color: #666; font-size: 12px; }
+        /* 遊戲模式樣式 (原本的樣式) */
+        .game-container { display: none; gap: 30px; flex-wrap: wrap; justify-content: center; }
+        #grid { display: grid; border: 3px solid var(--grid-bg); background-color: var(--grid-bg); gap: 1px; }
+        .cell { width: 45px; height: 45px; position: relative; }
+        .white-cell { background-color: white; }
+        .black-cell { background-color: var(--grid-bg); }
+        .cell input { width: 100%; height: 100%; border: none; text-align: center; font-size: 22px; font-weight: bold; background: transparent; outline: none; }
+        .num-label { position: absolute; top: 2px; left: 2px; font-size: 10px; color: #888; pointer-events: none; }
+        .clues-section { width: 320px; background: white; padding: 20px; border-radius: 12px; }
+        .clue-group h3 { border-left: 5px solid var(--primary); padding-left: 10px; }
+        .back-btn { margin-bottom: 20px; text-decoration: none; color: var(--primary); font-weight: bold; display: none; }
     </style>
 </head>
 <body>
 
-    <h1>韓哥填字遊戲 第一期</h1>
+    <div id="menu-view" class="menu-container">
+        <h1>韓哥填字遊戲</h1>
+        <p>請選擇想挑戰的關卡：</p>
+        <hr>
+        <a href="game.html?issue=001" class="level-card">
+            <h2>第一期</h2>
+        </a>
+        <a href="game.html?issue=002" class="level-card">
+            <h2>第二期</h2>
+        </a>
+    </div>
 
-    <div class="game-wrapper">
-        <div class="left-column">
-            <div id="grid"></div>
-            
-            <div class="input-area">
-                <span style="font-weight: bold; color: #3d405b;">填寫：</span>
-                <input type="text" id="mainInput" placeholder="輸入內容後按下Enter">
-                <div class="btn-group">
-                    <button class="btn-check" onclick="checkFullBoard()">檢查答案</button>
-                    <button class="btn-reset" onclick="location.reload()">重置</button>
-                </div>
-            </div>
+    <a href="index.html" id="back-to-menu" class="back-btn">← 回選單</a>
+    <div id="game-view" class="game-container">
+        <div class="header">
+            <h1 id="game-title">載入中...</h1>
+            <p id="game-issue"></p>
         </div>
-
-        <div class="clue-box">
-            <div class="clue-section">
-                <h3>橫行提示</h3>
-                <div class="clue-item" onclick="selectCell(2, 1)"><span class="clue-num">一</span>出自北宋詞人李清照《如夢令》的第一句，下一句是「濃睡不消殘酒」。</div>
-                <div class="clue-item" onclick="selectCell(5, 1)"><span class="clue-num">二</span>改編自東海大學校園傳說的恐怖片與電腦遊戲。</div>
-                <div class="clue-item" onclick="selectCell(4, 5)"><span class="clue-num">三</span>用來遮蔽影像敏感部位的處理技術。</div>
-                <div class="clue-item" onclick="selectCell(5, 7)"><span class="clue-num">四</span>位於台北市大同區，以「千歲宴」聞名的觀光夜市。</div>
-                <div class="clue-item" onclick="selectCell(7, 2)"><span class="clue-num">五</span>美國第五任總統提出的外交策略，核心為「美洲是美洲人的美洲」，主張歐洲不應干涉美洲事務。</div>
-                <div class="clue-item" onclick="selectCell(7, 7)"><span class="clue-num">六</span>台式傳統早餐，將麵粉、水、澱粉等調製成麵糊，煎成餅皮後再與蛋液一起煎熟。</div>
-                <div class="clue-item" onclick="selectCell(1, 8)"><span class="clue-num">七</span>台灣女歌手，代表作《寶貝》，後將藝名改回本名焦安溥。</div>
-                <div class="clue-item" onclick="selectCell(9, 1)"><span class="clue-num">八</span>以小籠包聞名全球的台灣品牌。</div>
-                <div class="clue-item" onclick="selectCell(9, 6)"><span class="clue-num">九</span>桃園知名的發展區域，以藝文活動著稱。</div>
-                <div class="clue-item" onclick="selectCell(3, 9)"><span class="clue-num">十</span>幾何學基本概念，指兩線相交成90度的關係。</div>
-            </div>
-            <div class="clue-section" style="margin-top:20px;">
-                <h3>直行提示</h3>
-                <div class="clue-item" onclick="selectCell(7, 3)"><span class="clue-num">1</span>台灣男歌手，綽號大牛，苗栗客家人，近年轉戰YouTube。</div>
-                <div class="clue-item" onclick="selectCell(9, 8)"><span class="clue-num">2</span>執行秘密情報任務的人員，如007。</div>
-                <div class="clue-item" onclick="selectCell(7, 9)"><span class="clue-num">3</span>地產術語，指城市中最精華的區域。</div>
-                <div class="clue-item" onclick="selectCell(1, 9)"><span class="clue-num">4</span>位於口腔軟顎後緣，俗稱小舌頭。</div>
-                <div class="clue-item" onclick="selectCell(4, 7)"><span class="clue-num">5</span>美國博登公司的奶粉品牌，後被雀巢收購，經典廣告詞「像大樹一樣高」。</div>
-                <div class="clue-item" onclick="selectCell(1, 2)"><span class="clue-num">6</span>俗語「平生不做虧心事」的下一句。</div>
-                <div class="clue-item" onclick="selectCell(8, 6)"><span class="clue-num">7</span>澎湖縣的行政中心，也是台灣離島最大的都市。</div>
-                <div class="clue-item" onclick="selectCell(9, 6)"><span class="clue-num">8</span>中國名導，代表作《紅高粱》、《活著》、《大紅燈籠高高掛》。</div>
-                <div class="clue-item" onclick="selectCell(3, 10)"><span class="clue-num">9</span>受行政院直接管轄的市區，如高雄市。</div>
-                <div class="clue-item" onclick="selectCell(2, 6)"><span class="clue-num">10</span>運動競賽中一球定生死的決賽機制。</div>
+        <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+            <div id="grid"></div>
+            <div class="clues-section">
+                <div class="clue-group"><h3>橫向提示</h3><div id="across-clues"></div></div>
+                <div class="clue-group" style="margin-top: 25px;"><h3>直向提示</h3><div id="down-clues"></div></div>
             </div>
         </div>
     </div>
 
-    <footer>© 2026 韓哥填字遊戲 - 歡迎挑戰</footer>
-
     <script>
-        const solutions = {
-            "2,1":"昨","2,2":"夜","2,3":"雨","2,4":"疏","2,5":"風","2,6":"驟",
-            "5,1":"女","5,2":"鬼","5,3":"橋","4,5":"馬","4,6":"賽","4,7":"克",
-            "5,7":"寧","5,8":"夏","5,9":"夜","5,10":"市","7,2":"門","7,3":"羅",
-            "7,4":"主","7,5":"義","7,7":"粉","7,8":"漿","7,9":"蛋","7,10":"餅",
-            "1,8":"張","1,9":"懸","9,1":"鼎","9,2":"泰","9,3":"豐","9,6":"藝",
-            "9,7":"文","9,8":"特","9,9":"區","3,9":"垂","3,10":"直","8,3":"時",
-            "10,8":"務","8,9":"黃","2,9":"雍","6,7":"奶","7,7":"粉","1,2":"半",
-            "3,2":"不","4,2":"怕","5,2":"鬼","6,2":"敲","7,2":"門","5,5":"公",
-            "8,6":"張","9,6":"藝","10,6":"謀","4,10":"轄","5,10":"市","3,6":"死","4,6":"賽"
-        };
+        const urlParams = new URLSearchParams(window.location.search);
+        const issueId = urlParams.get('issue');
 
-        const labels = {
-            "2,1": "一", "5,1": "二", "4,5": "三", "5,7": "四", "7,2": "五", 
-            "7,7": "六", "1,8": "七", "9,1": "八", "9,6": "九", "3,9": "十", "7,3": "1",
-            "9,8": "2", "7,9": "3", "4,7": "5", "1,2": "6", "8,6": "8", "3,10": "9", "2,6": "10", "1,9": "4"
-        };
+        if (issueId) {
+            // 進入遊戲模式
+            document.getElementById('menu-view').style.display = 'none';
+            document.getElementById('game-view').style.display = 'flex';
+            document.getElementById('back-to-menu').style.display = 'block';
+            loadGame(issueId);
+        }
 
-        const grid = document.getElementById('grid');
-        const mainInput = document.getElementById('mainInput');
-        let currentCell = null;
+        function loadGame(id) {
+            fetch(`./puzzles/${id}.json`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('game-title').innerText = data.name;
+                    document.getElementById('game-issue').innerText = `第 ${data.id} 期`;
+                    setupGrid(data);
+                })
+                .catch(err => {
+                    document.getElementById('game-title').innerText = "找不到關卡";
+                });
+        }
 
-        // 初始化網格
-        for (let r = 1; r <= 10; r++) {
-            for (let c = 1; c <= 10; c++) {
-                const key = `${r},${c}`;
-                const cell = document.createElement('div');
-                cell.className = 'cell ' + (solutions[key] ? 'white-cell' : 'black-cell');
-                cell.id = "cell-" + key;
-                
-                if (solutions[key]) {
-                    if (labels[key]) {
-                        const lbl = document.createElement('div');
-                        lbl.className = 'num-label';
-                        lbl.innerText = labels[key];
-                        cell.appendChild(lbl);
+        function setupGrid(data) {
+            const grid = document.getElementById('grid');
+            grid.style.gridTemplateColumns = `repeat(${data.size}, 45px)`;
+            for (let r = 1; r <= data.size; r++) {
+                for (let c = 1; c <= data.size; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    const found = data.cells.find(x => x.r === r && x.c === c);
+                    if (found) {
+                        cell.classList.add('white-cell');
+                        const input = document.createElement('input');
+                        input.maxLength = 1;
+                        cell.appendChild(input);
+                        if (found.label) {
+                            const label = document.createElement('span');
+                            label.className = 'num-label';
+                            label.innerText = found.label;
+                            cell.appendChild(label);
+                        }
+                    } else {
+                        cell.classList.add('black-cell');
                     }
-                    const display = document.createElement('div');
-                    display.className = 'cell-text';
-                    display.style = "width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:bold; cursor:pointer;";
-                    display.id = "text-" + key;
-                    cell.appendChild(display);
-                    cell.onclick = () => selectCell(r, c);
-                }
-                grid.appendChild(cell);
-            }
-        }
-
-        function selectCell(r, c, direction = null) {
-            let targetR = r;
-            let targetC = c;
-
-            if (direction) {
-                while (targetR >= 1 && targetR <= 10 && targetC >= 1 && targetC <= 10) {
-                    const key = `${targetR},${targetC}`;
-                    if (solutions[key]) break;
-                    if (direction === 'ArrowUp') targetR--;
-                    else if (direction === 'ArrowDown') targetR++;
-                    else if (direction === 'ArrowLeft') targetC--;
-                    else if (direction === 'ArrowRight') targetC++;
+                    grid.appendChild(cell);
                 }
             }
-
-            const finalKey = `${targetR},${targetC}`;
-            if (targetR < 1 || targetR > 10 || targetC < 1 || targetC > 10 || !solutions[finalKey]) return;
-
-            if (currentCell) {
-                updateCellColor(currentCell);
-            }
-
-            currentCell = finalKey;
-            document.getElementById("cell-" + finalKey).style.backgroundColor = "#fff3b0";
-            mainInput.value = "";
-            mainInput.focus();
+            renderClues('across-clues', data.clues.across);
+            renderClues('down-clues', data.clues.down);
         }
 
-        function updateCellColor(key) {
-            const cell = document.getElementById("cell-" + key);
-            const text = document.getElementById("text-" + key).innerText;
-            if (text === "") {
-                cell.style.backgroundColor = "white";
-            } else if (text === solutions[key]) {
-                cell.style.backgroundColor = "#d8f3dc";
-            } else {
-                cell.style.backgroundColor = "#ffd7d7";
-            }
-        }
-
-        function checkFullBoard() {
-            let correctCount = 0;
-            let totalCells = Object.keys(solutions).length;
-            
-            for (let key in solutions) {
-                const text = document.getElementById("text-" + key).innerText;
-                if (text === solutions[key]) {
-                    correctCount++;
-                    document.getElementById("cell-" + key).style.backgroundColor = "#d8f3dc";
-                } else if (text !== "") {
-                    document.getElementById("cell-" + key).style.backgroundColor = "#ffd7d7";
-                }
-            }
-
-            if (correctCount === totalCells) {
-                alert("太強了！你全部填對了！🎉");
-            } else {
-                alert(`目前進度：${correctCount} / ${totalCells} 格正確。加油！`);
-            }
-        }
-
-        // 鍵盤輸入與控制邏輯
-        mainInput.addEventListener('keydown', (e) => {
-            if (!currentCell) return;
-            const [r, c] = currentCell.split(',').map(Number);
-
-            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-                e.preventDefault();
-                let nextR = r, nextC = c;
-                if (e.key === 'ArrowUp') nextR--;
-                else if (e.key === 'ArrowDown') nextR++;
-                else if (e.key === 'ArrowLeft') nextC--;
-                else if (e.key === 'ArrowRight') nextC++;
-                selectCell(nextR, nextC, e.key);
-            } else if (e.key === 'Enter' && mainInput.value !== "") {
-                const char = mainInput.value[0];
-                const display = document.getElementById("text-" + currentCell);
-                display.innerText = char;
-                updateCellColor(currentCell);
-                mainInput.value = "";
-            } else if (e.key === 'Backspace' && mainInput.value === "") {
-                document.getElementById("text-" + currentCell).innerText = "";
-                document.getElementById("cell-" + currentCell).style.backgroundColor = "#fff3b0";
-            }
-        });
-
-        // --- 偷看答案小彩蛋：點擊標題 3 次顯示答案 3 秒 ---
-        let titleClickCount = 0;
-        document.querySelector('h1').onclick = () => {
-            titleClickCount++;
-            if (titleClickCount === 3) {
-                titleClickCount = 0;
-                revealAnswersTemporarily();
-            }
-        };
-
-        function revealAnswersTemporarily() {
-            for (let key in solutions) {
-                const display = document.getElementById("text-" + key);
-                const originalText = display.innerText;
-                
-                display.innerText = solutions[key];
-                display.style.color = "#e07a5f"; // 偷看時字體變橘色
-
-                setTimeout(() => {
-                    display.innerText = originalText;
-                    display.style.color = "#2d6a4f"; // 恢復原本顏色
-                }, 3000);
-            }
+        function renderClues(elementId, clues) {
+            const container = document.getElementById(elementId);
+            clues.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'clue-text';
+                div.innerHTML = `<span class="clue-idx">${c.num}</span>${c.text}`;
+                container.appendChild(div);
+            });
         }
     </script>
+</body>
+</html>
+
