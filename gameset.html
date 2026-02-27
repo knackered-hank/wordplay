@@ -4,22 +4,31 @@
     <meta charset="UTF-8">
     <title id="page-title">韓哥填字遊戲</title>
     <style>
-        /* 完全保留你原本的 CSS 樣式 */
+        /* 基礎樣式設定 */
         body { font-family: "Microsoft JhengHei", sans-serif; background-color: #f4f1de; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        h1 { color: #3d405b; margin-bottom: 20px; cursor: pointer; }
+        
+        /* 隱藏彩蛋：標題不顯示手型，防止被發現可點擊 */
+        h1 { color: #3d405b; margin-bottom: 20px; cursor: default; user-select: none; }
+        
         .game-wrapper { display: flex; gap: 40px; align-items: flex-start; justify-content: center; flex-wrap: wrap; }
         .left-column { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        
+        /* 網格系統 */
         #grid { display: grid; grid-template-columns: repeat(10, 48px); grid-template-rows: repeat(10, 48px); border: 4px solid #333; background-color: #333; box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
         .cell { width: 48px; height: 48px; position: relative; box-sizing: border-box; }
-        .white-cell { background-color: white; border: 1px solid #ccc; }
+        .white-cell { background-color: white; border: 1px solid #ccc; cursor: pointer; }
         .black-cell { background-color: #333; }
         .cell-text { color: #2d6a4f; pointer-events: none; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:bold; }
         .num-label { position: absolute; top: 2px; left: 4px; font-size: 11px; color: #666; font-weight: bold; pointer-events: none; }
+        
+        /* 輸入與按鈕區 */
         .input-area { width: 488px; background: #fff; padding: 15px; border-radius: 10px; display: flex; gap: 10px; align-items: center; border: 2px solid #3d405b; box-sizing: border-box; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         #mainInput { flex-grow: 1; font-size: 18px; padding: 8px; text-align: center; border: 1px solid #ccc; border-radius: 5px; }
         button { padding: 8px 12px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; color: white; transition: 0.3s; }
         .btn-check { background: #2d6a4f; }
         .btn-reset { background: #e07a5f; }
+        
+        /* 提示區域 */
         .clue-box { width: 380px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); height: 600px; overflow-y: auto; border-top: 5px solid #e07a5f; }
         .clue-section h3 { border-bottom: 2px solid #e07a5f; padding-bottom: 8px; color: #3d405b; margin-top: 0; }
         .clue-item { margin-bottom: 12px; font-size: 14px; line-height: 1.5; color: #444; cursor: pointer; padding: 4px; border-radius: 4px; }
@@ -71,7 +80,7 @@
                 document.getElementById('game-title').innerText = data.name;
                 document.title = data.name;
                 
-                // 轉換資料格式以配合你原本的邏輯
+                // 解析 cell 資料
                 data.cells.forEach(c => {
                     const key = `${c.r},${c.c}`;
                     solutions[key] = c.ans;
@@ -81,10 +90,12 @@
                 initGrid();
                 renderClues('across-clues', data.clues.across);
                 renderClues('down-clues', data.clues.down);
-            });
+            })
+            .catch(err => alert("載入關卡失敗，請檢查 puzzles 資料夾是否有對應的 JSON 檔案。"));
 
         function initGrid() {
             const grid = document.getElementById('grid');
+            grid.innerHTML = "";
             for (let r = 1; r <= 10; r++) {
                 for (let c = 1; c <= 10; c++) {
                     const key = `${r},${c}`;
@@ -110,33 +121,31 @@
             }
         }
 
-        // 完全保留你原本的選擇、顏色更新、檢查答案邏輯
-        function selectCell(r, c, direction = null) {
-            let targetR = r, targetC = c;
-            if (direction) {
-                while (targetR >= 1 && targetR <= 10 && targetC >= 1 && targetC <= 10) {
-                    if (solutions[`${targetR},${targetC}`]) break;
-                    if (direction === 'ArrowUp') targetR--;
-                    else if (direction === 'ArrowDown') targetR++;
-                    else if (direction === 'ArrowLeft') targetC--;
-                    else if (direction === 'ArrowRight') targetC++;
-                }
-            }
-            const finalKey = `${targetR},${targetC}`;
-            if (targetR < 1 || targetR > 10 || targetC < 1 || targetC > 10 || !solutions[finalKey]) return;
+        function selectCell(r, c) {
+            const finalKey = `${r},${c}`;
+            if (!solutions[finalKey]) return;
 
             if (currentCell) updateCellColor(currentCell);
             currentCell = finalKey;
+            
+            // 高亮選中格
             document.getElementById("cell-" + finalKey).style.backgroundColor = "#fff3b0";
             document.getElementById('mainInput').focus();
         }
 
         function updateCellColor(key) {
             const cell = document.getElementById("cell-" + key);
-            const text = document.getElementById("text-" + key).innerText;
-            if (text === "") cell.style.backgroundColor = "white";
-            else if (text === solutions[key]) cell.style.backgroundColor = "#d8f3dc";
-            else cell.style.backgroundColor = "#ffd7d7";
+            const textElement = document.getElementById("text-" + key);
+            if (!textElement) return;
+
+            const text = textElement.innerText;
+            if (text === "") {
+                cell.style.backgroundColor = "white";
+            } else if (text === solutions[key]) {
+                cell.style.backgroundColor = "#d8f3dc"; // 正確綠色
+            } else {
+                cell.style.backgroundColor = "#ffd7d7"; // 錯誤紅色
+            }
         }
 
         function checkFullBoard() {
@@ -151,19 +160,22 @@
                     document.getElementById("cell-" + key).style.backgroundColor = "#ffd7d7";
                 }
             }
-            alert(correctCount === total ? "太強了！🎉" : `目前進度：${correctCount} / ${total}`);
+            alert(correctCount === total ? "太強了！完全正確！🎉" : `目前進度：${correctCount} / ${total}`);
         }
 
-        // 鍵盤控制
+        // 鍵盤輸入邏輯
         document.getElementById('mainInput').addEventListener('keydown', (e) => {
             if (!currentCell) return;
             const [r, c] = currentCell.split(',').map(Number);
+            
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                 e.preventDefault();
                 let nR = r, nC = c;
                 if (e.key === 'ArrowUp') nR--; else if (e.key === 'ArrowDown') nR++;
                 else if (e.key === 'ArrowLeft') nC--; else if (e.key === 'ArrowRight') nC++;
-                selectCell(nR, nC, e.key);
+                
+                // 檢查新位置是否為白格，若不是則不移動
+                if (solutions[`${nR},${nC}`]) selectCell(nR, nC);
             } else if (e.key === 'Enter' && e.target.value !== "") {
                 document.getElementById("text-" + currentCell).innerText = e.target.value[0];
                 updateCellColor(currentCell);
@@ -174,22 +186,28 @@
             }
         });
 
+        // 修正後的跳轉函數：根據標籤名稱尋找座標
         function renderClues(id, clues) {
             const container = document.getElementById(id);
+            container.innerHTML = "";
             clues.forEach(c => {
                 const div = document.createElement('div');
                 div.className = 'clue-item';
                 div.innerHTML = `<span class="clue-num">${c.num}</span>${c.text}`;
-                // 點擊提示也能選中格子
+                
                 div.onclick = () => {
-                    const firstCell = c.text.includes("夜") ? [2,1] : [1,1]; // 這裡可優化
-                    // 點擊提示跳轉到該題起始座標
+                    // 在 labels 物件中搜尋與提示編號 (c.num) 相同的座標
+                    const targetKey = Object.keys(labels).find(key => labels[key] === c.num);
+                    if (targetKey) {
+                        const [r, cPos] = targetKey.split(',').map(Number);
+                        selectCell(r, cPos);
+                    }
                 };
                 container.appendChild(div);
             });
         }
 
-        // 偷看答案小彩蛋
+        // 偷看答案小彩蛋 (隱藏點擊手勢)
         let clicks = 0;
         document.getElementById('game-title').onclick = () => {
             if (++clicks === 3) {
