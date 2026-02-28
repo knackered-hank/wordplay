@@ -28,7 +28,7 @@
         .btn-group { display: flex; gap: 6px; }
         button { padding: 8px 10px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; color: white; transition: 0.3s; white-space: nowrap; font-size: 14px; }
         .btn-check { background: #2d6a4f; }
-        .btn-clear-one { background: #6c757d; } /* 垃圾桶按鈕顏色：灰色 */
+        .btn-clear-one { background: #ffffff; } /* 垃圾桶按鈕顏色：灰色 */
         .btn-reset { background: #e07a5f; }
         button:hover { opacity: 0.8; }
         
@@ -51,9 +51,9 @@
                 <span class="input-label">填寫：</span>
                 <input type="text" id="mainInput" placeholder="輸入後按Enter">
                 <div class="btn-group">
-                    <button class="btn-check" onclick="checkFullBoard()">檢查</button>
+                    <button class="btn-check" onclick="checkFullBoard()">檢查答案</button>
                     <button class="btn-clear-one" title="清除當格" onclick="clearCurrentCell()">🗑️</button>
-                    <button class="btn-reset" onclick="location.reload()">清空</button>
+                    <button class="btn-reset" onclick="location.reload()">清空全部</button>
                 </div>
             </div>
             <a href="index.html" class="back-link">← 返回選單</a>
