@@ -214,7 +214,9 @@
                 div.className = 'clue-item';
                 div.innerHTML = `<span class="clue-num">${c.num}</span>${c.text}`;
                 div.onclick = () => {
-                    const targetKey = Object.keys(labels).find(key => labels[key] === c.num);
+                    const targetKey = Object.keys(labels).find(key => 
+                        labels[key].toString().includes(c.num.toString())
+                    );
                     if (targetKey) {
                         const [r, cPos] = targetKey.split(',').map(Number);
                         selectCell(r, cPos);
