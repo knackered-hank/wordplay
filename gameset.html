@@ -173,15 +173,25 @@
 
         const mainInput = document.getElementById('mainInput');
 
-        // 監聽注音選字事件
-        mainInput.addEventListener('compositionstart', () => { isComposing = true; });
-        mainInput.addEventListener('compositionend', () => { isComposing = false; });
+        // 監聽注音選字狀態
+        mainInput.addEventListener('compositionstart', () => { 
+            isComposing = true; 
+        });
+
+        mainInput.addEventListener('compositionend', () => { 
+            // 某些瀏覽器在 compositionend 時文字還沒進到 input，延遲一小會兒確保狀態同步
+            setTimeout(() => { isComposing = false; }, 50);
+        });
 
         mainInput.addEventListener('keydown', (e) => {
             if (!currentCell) return;
+
+            // 核心修正：如果正在選字中，不論按什麼鍵（方向鍵、Enter）都直接 return，交給輸入法處理
+            if (isComposing) return;
+
             const [r, c] = currentCell.split(',').map(Number);
             
-            // 方向鍵邏輯：隨時可跳格
+            // 方向鍵移動邏輯：只有在「非選字狀態」下才執行
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                 e.preventDefault();
                 let nR = r, nC = c;
@@ -201,34 +211,26 @@
                 return;
             }
 
-            // 只有在非選字狀態下按下 Enter，才執行填字與跳格
+            // Enter 填字與自動跳格邏輯
             if (e.key === 'Enter') {
-                if (isComposing) return; // 選字中不反應
-
                 const val = e.target.value.trim();
                 if (val !== "") {
-                    // 填入第一個字
+                    // 填入文字
                     document.getElementById("text-" + currentCell).innerText = val[0];
                     e.target.value = "";
                     
-                    // 自動跳往右邊或下邊的一格（優先往右，若右邊沒格則往左搜尋下一個起點）
-                    let nR = r, nC = c + 1;
-                    if (nC > 10 || !solutions[`${nR},${nC}`]) {
-                        // 如果右邊沒格了，尋找下一個橫行的第一個白格
-                        let foundNext = false;
-                        for (let row = r; row <= 10; row++) {
-                            let startCol = (row === r) ? c + 1 : 1;
-                            for (let col = startCol; col <= 10; col++) {
-                                if (solutions[`${row},${col}`]) {
-                                    selectCell(row, col);
-                                    foundNext = true;
-                                    break;
-                                }
+                    // 自動跳往下一格
+                    let foundNext = false;
+                    for (let row = r; row <= 10; row++) {
+                        let startCol = (row === r) ? c + 1 : 1;
+                        for (let col = startCol; col <= 10; col++) {
+                            if (solutions[`${row},${col}`]) {
+                                selectCell(row, col);
+                                foundNext = true;
+                                break;
                             }
-                            if (foundNext) break;
                         }
-                    } else {
-                        selectCell(nR, nC);
+                        if (foundNext) break;
                     }
                 }
             } else if (e.key === 'Backspace' && e.target.value === "") {
