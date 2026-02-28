@@ -7,7 +7,6 @@
         /* 基礎樣式設定 */
         body { font-family: "Microsoft JhengHei", sans-serif; background-color: #f4f1de; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         
-        /* 隱藏彩蛋：標題不顯示手型，防止被發現可點擊 */
         h1 { color: #3d405b; margin-bottom: 20px; cursor: default; user-select: none; }
         
         .game-wrapper { display: flex; gap: 40px; align-items: flex-start; justify-content: center; flex-wrap: wrap; }
@@ -73,25 +72,21 @@
         let labels = {};
         let currentCell = null;
 
-        // 讀取外部 JSON
         fetch(`./puzzles/${issueId}.json`)
             .then(res => res.json())
             .then(data => {
                 document.getElementById('game-title').innerText = data.name;
                 document.title = data.name;
-                
-                // 解析 cell 資料
                 data.cells.forEach(c => {
                     const key = `${c.r},${c.c}`;
                     solutions[key] = c.ans;
                     if (c.label) labels[key] = c.label;
                 });
-
                 initGrid();
                 renderClues('across-clues', data.clues.across);
                 renderClues('down-clues', data.clues.down);
             })
-            .catch(err => alert("載入關卡失敗，請檢查 puzzles 資料夾是否有對應的 JSON 檔案。"));
+            .catch(err => alert("載入關卡失敗，請檢查 puzzles 資料夾。"));
 
         function initGrid() {
             const grid = document.getElementById('grid');
@@ -124,28 +119,20 @@
         function selectCell(r, c) {
             const finalKey = `${r},${c}`;
             if (!solutions[finalKey]) return;
-
             if (currentCell) updateCellColor(currentCell);
             currentCell = finalKey;
-            
-            // 高亮選中格
             document.getElementById("cell-" + finalKey).style.backgroundColor = "#fff3b0";
             document.getElementById('mainInput').focus();
         }
 
+        // 修改：平時僅恢復基礎色，不判定對錯
         function updateCellColor(key) {
             const cell = document.getElementById("cell-" + key);
-            const textElement = document.getElementById("text-" + key);
-            if (!textElement) return;
-
-            // 平時輸入時，僅恢復為白色（非選中）或維持黃色（選中）
-            if (currentCell === key) {
-                cell.style.backgroundColor = "#fff3b0";
-            } else {
-                cell.style.backgroundColor = "white";
-            }
+            if (!cell) return;
+            cell.style.backgroundColor = (currentCell === key) ? "#fff3b0" : "white";
         }
 
+        // 修改：按下檢查按鈕才觸發變色與亮紅燈
         function checkFullBoard() {
             let correctCount = 0;
             let total = Object.keys(solutions).length;
@@ -158,11 +145,9 @@
                     correctCount++;
                     cell.style.backgroundColor = "#d8f3dc"; // 正確綠
                 } else if (text !== "") {
-                    // 填寫錯誤：亮起高明度紅色
-                    cell.style.backgroundColor = "#ff4d4d"; 
+                    cell.style.backgroundColor = "#ff4d4d"; // 錯誤亮紅燈
                     
                     setTimeout(() => {
-                        // 兩秒後恢復：判斷是否正被選中
                         if (currentCell === key) {
                             cell.style.backgroundColor = "#fff3b0";
                         } else {
@@ -171,22 +156,21 @@
                     }, 2000);
                 }
             }
-            alert(correctCount === total ? "太強了！完全正確！🎉" : `目前進度：${correctCount} / ${total}`);
-        }
-            
-            if (correctCount === total) {
-                alert("太強了！完全正確！🎉");
-            } else {
-                alert(`目前進度：${correctCount} / ${total}`);
-            }
+            // 延遲一點顯示訊息，讓玩家先看到格子的變化
+            setTimeout(() => {
+                if (correctCount === total) {
+                    alert("太強了！完全正確！🎉");
+                } else {
+                    alert(`目前進度：${correctCount} / ${total}`);
+                }
+            }, 100);
         }
 
-        // 鍵盤輸入邏輯：支援跳過黑格的方向鍵導航
+        // 鍵盤邏輯優化：區分方向鍵導航與 Enter 填寫
         document.getElementById('mainInput').addEventListener('keydown', (e) => {
             if (!currentCell) return;
             const [r, c] = currentCell.split(',').map(Number);
             
-            // 處理方向鍵導航 (純移動)
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                 e.preventDefault();
                 let nR = r, nC = c;
@@ -196,31 +180,27 @@
                     else if (e.key === 'ArrowLeft') nC--; 
                     else if (e.key === 'ArrowRight') nC++;
 
-                    if (nR < 1 || nR > 10 || nC < 1 || nC > 10) break; // 撞牆停止
-
+                    if (nR < 1 || nR > 10 || nC < 1 || nC > 10) break;
                     if (solutions[`${nR},${nC}`]) {
                         selectCell(nR, nC);
                         break;
                     }
                 }
             } 
-            // 處理 Enter 確認填寫
             else if (e.key === 'Enter') {
                 const val = e.target.value.trim();
                 if (val !== "") {
                     document.getElementById("text-" + currentCell).innerText = val[0];
-                    updateCellColor(currentCell); // 僅更新為選中色，不判定對錯
+                    updateCellColor(currentCell); 
                     e.target.value = "";
                 }
             } 
-            // 處理 Backspace
             else if (e.key === 'Backspace' && e.target.value === "") {
                 document.getElementById("text-" + currentCell).innerText = "";
-                document.getElementById("cell-" + currentCell).style.backgroundColor = "#fff3b0";
+                updateCellColor(currentCell);
             }
         });
 
-        // 修正後的跳轉函數：根據標籤名稱尋找座標
         function renderClues(id, clues) {
             const container = document.getElementById(id);
             container.innerHTML = "";
@@ -228,9 +208,7 @@
                 const div = document.createElement('div');
                 div.className = 'clue-item';
                 div.innerHTML = `<span class="clue-num">${c.num}</span>${c.text}`;
-                
                 div.onclick = () => {
-                    // 在 labels 物件中搜尋與提示編號 (c.num) 相同的座標
                     const targetKey = Object.keys(labels).find(key => labels[key] === c.num);
                     if (targetKey) {
                         const [r, cPos] = targetKey.split(',').map(Number);
@@ -241,7 +219,7 @@
             });
         }
 
-        // 偷看答案小彩蛋 (隱藏點擊手勢)
+        // 彩蛋保持原樣
         let clicks = 0;
         document.getElementById('game-title').onclick = () => {
             if (++clicks === 3) {
