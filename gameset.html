@@ -5,7 +5,8 @@
     <title id="page-title">韓哥填字遊戲</title>
     <style>
         body { font-family: "Microsoft JhengHei", sans-serif; background-color: #f4f1de; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; min-height: 100vh; }
-        h1 { color: #3d405b; margin: 20px 0; cursor: pointer; user-select: none; }
+        /* 修正：移除指標手勢，讓彩蛋更隱密 */
+        h1 { color: #3d405b; margin: 20px 0; }
         .game-wrapper { display: flex; gap: 40px; align-items: flex-start; justify-content: center; flex-wrap: wrap; max-width: 1200px; flex: 1; }
         .left-column { display: flex; flex-direction: column; align-items: center; gap: 20px; }
         
@@ -80,7 +81,7 @@
         let solutions = {};
         let labels = {};
         let currentCell = null;
-        let isComposing = false; // 追蹤注音選字狀態
+        let isComposing = false; 
 
         fetch(`./puzzles/${issueId}.json`)
             .then(res => { if (!res.ok) throw new Error(); return res.json(); })
@@ -127,15 +128,11 @@
         function selectCell(r, c) {
             const newKey = `${r},${c}`;
             if (!solutions[newKey]) return;
-            
             const oldKey = currentCell;
             currentCell = newKey;
-            
             if (oldKey) updateCellDisplay(oldKey);
             updateCellDisplay(currentCell);
-            
-            const input = document.getElementById('mainInput');
-            input.focus();
+            document.getElementById('mainInput').focus();
         }
 
         function updateCellDisplay(key) {
@@ -173,37 +170,17 @@
 
         const mainInput = document.getElementById('mainInput');
 
-        // 監聽注音選字狀態
-        mainInput.addEventListener('compositionstart', () => { 
-            isComposing = true; 
-        });
-
+        mainInput.addEventListener('compositionstart', () => { isComposing = true; });
         mainInput.addEventListener('compositionend', () => { 
-            // 某些瀏覽器在 compositionend 時文字還沒進到 input，延遲一小會兒確保狀態同步
-            setTimeout(() => { isComposing = false; }, 50);
-        });
-
-        const mainInput = document.getElementById('mainInput');
-
-        // 監聽注音選字狀態
-        mainInput.addEventListener('compositionstart', () => { 
-            isComposing = true; 
-        });
-
-        mainInput.addEventListener('compositionend', () => { 
-            // 延遲同步狀態，確保 Enter 鍵判斷正確
             setTimeout(() => { isComposing = false; }, 50);
         });
 
         mainInput.addEventListener('keydown', (e) => {
             if (!currentCell) return;
-
-            // 如果正在選字中，程式完全不介入，讓輸入法處理方向鍵與 Enter
             if (isComposing) return;
 
             const [r, c] = currentCell.split(',').map(Number);
             
-            // 方向鍵移動邏輯：只有在「非選字狀態」下才執行，且維持原地不自動跳格
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                 e.preventDefault();
                 let nR = r, nC = c;
@@ -213,7 +190,6 @@
                     else if (e.key === 'ArrowDown') nR++;
                     else if (e.key === 'ArrowLeft') nC--; 
                     else if (e.key === 'ArrowRight') nC++;
-
                     if (nR < 1 || nR > 10 || nC < 1 || nC > 10) break;
                     if (solutions[`${nR},${nC}`]) {
                         selectCell(nR, nC);
@@ -223,18 +199,13 @@
                 return;
             }
 
-            // Enter 填字邏輯：只填入文字，不自動跳到下一格
             if (e.key === 'Enter') {
                 const val = e.target.value.trim();
                 if (val !== "") {
-                    // 將文字填入當前格子
                     document.getElementById("text-" + currentCell).innerText = val[0];
-                    // 清空輸入框內容，方便下次輸入，但焦點維持在當前格子
                     e.target.value = "";
                 }
-            } 
-            // 退格鍵邏輯：當輸入框為空時，刪除當前格子的文字
-            else if (e.key === 'Backspace' && e.target.value === "") {
+            } else if (e.key === 'Backspace' && e.target.value === "") {
                 document.getElementById("text-" + currentCell).innerText = "";
             }
         });
@@ -260,6 +231,7 @@
             });
         }
 
+        // 隱藏彩蛋邏輯
         let clicks = 0;
         document.getElementById('game-title').onclick = () => {
             clicks++;
