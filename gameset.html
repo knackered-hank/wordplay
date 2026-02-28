@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <title id="page-title">韓哥填字遊戲</title>
     <style>
-        body { font-family: "Microsoft JhengHei", sans-serif; background-color: #f4f1de; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
-        h1 { color: #3d405b; margin: 20px 0; cursor: default; user-select: none; }
-        .game-wrapper { display: flex; gap: 40px; align-items: flex-start; justify-content: center; flex-wrap: wrap; max-width: 1200px; }
+        body { font-family: "Microsoft JhengHei", sans-serif; background-color: #f4f1de; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; min-height: 100vh; }
+        h1 { color: #3d405b; margin: 20px 0; cursor: pointer; user-select: none; }
+        .game-wrapper { display: flex; gap: 40px; align-items: flex-start; justify-content: center; flex-wrap: wrap; max-width: 1200px; flex: 1; }
         .left-column { display: flex; flex-direction: column; align-items: center; gap: 20px; }
         
         #grid { display: grid; grid-template-columns: repeat(10, 48px); grid-template-rows: repeat(10, 48px); border: 4px solid #333; background-color: #333; box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
@@ -26,16 +26,8 @@
         
         .btn-group { display: flex; gap: 5px; align-items: center; }
         button { padding: 8px 6px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; color: white; transition: 0.3s; white-space: nowrap; font-size: 13px; }
-        
         .btn-check { background: #2d6a4f; }
-        /* 垃圾桶按鈕改為白色 */
-        .btn-clear-one { 
-            background: #ffffff; 
-            color: #3d405b; 
-            border: 1px solid #ccc; 
-            padding: 8px 8px; 
-            font-size: 16px; 
-        }
+        .btn-clear-one { background: #ffffff; color: #3d405b; border: 1px solid #ccc; padding: 8px 8px; font-size: 16px; }
         .btn-reset { background: #e07a5f; }
         button:hover { opacity: 0.8; }
         
@@ -44,6 +36,7 @@
         .clue-item { margin-bottom: 12px; font-size: 14px; line-height: 1.5; color: #444; cursor: pointer; padding: 4px; border-radius: 4px; }
         .clue-num { font-weight: bold; color: #e07a5f; margin-right: 8px; }
         .clue-item:hover { background-color: #fdf0d5; color: #e07a5f; }
+        
         .back-link { margin-top: 10px; text-decoration: none; color: #e07a5f; font-weight: bold; align-self: flex-start; }
         .footer { margin-top: 40px; margin-bottom: 20px; font-size: 12px; color: #888; text-align: center; width: 100%; }
     </style>
@@ -57,7 +50,7 @@
             <div id="grid"></div>
             <div class="input-area">
                 <span class="input-label">填寫：</span>
-                <input type="text" id="mainInput" placeholder="輸入後按Enter">
+                <input type="text" id="mainInput" placeholder="輸入後按Enter" autocomplete="off">
                 <div class="btn-group">
                     <button class="btn-check" onclick="checkFullBoard()">檢查答案</button>
                     <button class="btn-clear-one" title="清除當格" onclick="clearCurrentCell()">🗑️</button>
@@ -78,7 +71,9 @@
             </div>
         </div>
     </div>
+
     <div class="footer">◎2026 韓哥填字遊戲</div>
+
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const issueId = urlParams.get('issue') || '001';
@@ -129,16 +124,23 @@
         }
 
         function selectCell(r, c) {
-            const oldCell = currentCell;
-            currentCell = `${r},${c}`;
-            if (oldCell) updateCellColor(oldCell); 
-            updateCellColor(currentCell); 
-            document.getElementById('mainInput').focus();
+            const newKey = `${r},${c}`;
+            if (!solutions[newKey]) return; // 如果不是白格就不選
+            
+            const oldKey = currentCell;
+            currentCell = newKey;
+            
+            if (oldKey) updateCellDisplay(oldKey); // 恢復舊格
+            updateCellDisplay(currentCell); // 高亮新格
+            
+            const input = document.getElementById('mainInput');
+            input.focus();
         }
 
-        function updateCellColor(key) {
+        function updateCellDisplay(key) {
             const cell = document.getElementById("cell-" + key);
             if (!cell) return;
+            // 優先顯示高亮
             cell.style.backgroundColor = (currentCell === key) ? "#fff3b0" : "white";
         }
 
@@ -161,7 +163,7 @@
                     cell.style.backgroundColor = "#d8f3dc"; 
                 } else if (text !== "") {
                     cell.style.backgroundColor = "#ff4d4d"; 
-                    setTimeout(() => { updateCellColor(key); }, 1250); 
+                    setTimeout(() => { updateCellDisplay(key); }, 1250); 
                 }
             });
             setTimeout(() => {
@@ -169,17 +171,28 @@
             }, 100);
         }
 
+        // 鍵盤移動邏輯 - 修正重點
         document.getElementById('mainInput').addEventListener('keydown', (e) => {
             if (!currentCell) return;
             const [r, c] = currentCell.split(',').map(Number);
+            
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                 e.preventDefault();
                 let nR = r, nC = c;
-                while (true) {
-                    if (e.key === 'ArrowUp') nR--; else if (e.key === 'ArrowDown') nR++;
-                    else if (e.key === 'ArrowLeft') nC--; else if (e.key === 'ArrowRight') nC++;
+                let found = false;
+                
+                // 往該方向搜尋最近的白格
+                while (!found) {
+                    if (e.key === 'ArrowUp') nR--; 
+                    else if (e.key === 'ArrowDown') nR++;
+                    else if (e.key === 'ArrowLeft') nC--; 
+                    else if (e.key === 'ArrowRight') nC++;
+
                     if (nR < 1 || nR > 10 || nC < 1 || nC > 10) break;
-                    if (solutions[`${nR},${nC}`]) { selectCell(nR, nC); break; }
+                    if (solutions[`${nR},${nC}`]) {
+                        selectCell(nR, nC);
+                        found = true;
+                    }
                 }
             } else if (e.key === 'Enter') {
                 const val = e.target.value.trim();
@@ -211,7 +224,6 @@
             });
         }
 
-        // --- 補回彩蛋邏輯 ---
         let clicks = 0;
         document.getElementById('game-title').onclick = () => {
             clicks++;
@@ -221,11 +233,11 @@
                     const d = document.getElementById("text-" + key);
                     const oldText = d.innerText;
                     d.innerText = solutions[key];
-                    d.style.color = "#e07a5f"; // 彩蛋秀出的答案用橘紅色標示
+                    d.style.color = "#e07a5f";
                     setTimeout(() => { 
                         d.innerText = oldText; 
                         d.style.color = "#2d6a4f"; 
-                    }, 1500); // 秀出 1.5 秒
+                    }, 1500); 
                 }
             }
         };
