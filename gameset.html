@@ -151,16 +151,36 @@
         function checkFullBoard() {
             let correctCount = 0;
             let total = Object.keys(solutions).length;
+            
             for (let key in solutions) {
-                const text = document.getElementById("text-" + key).innerText;
+                const cell = document.getElementById("cell-" + key);
+                const textElement = document.getElementById("text-" + key);
+                const text = textElement.innerText;
+
                 if (text === solutions[key]) {
                     correctCount++;
-                    document.getElementById("cell-" + key).style.backgroundColor = "#d8f3dc";
+                    cell.style.backgroundColor = "#d8f3dc"; // 正確保持綠色
                 } else if (text !== "") {
-                    document.getElementById("cell-" + key).style.backgroundColor = "#ffd7d7";
+                    // 填寫錯誤：亮紅燈兩秒
+                    const originalColor = "white"; 
+                    cell.style.backgroundColor = "#ffcccc"; // 亮紅色
+                    
+                    setTimeout(() => {
+                        // 兩秒後，如果這格不是目前選中的格子，就恢復原色
+                        if (currentCell !== key) {
+                            cell.style.backgroundColor = originalColor;
+                        } else {
+                            cell.style.backgroundColor = "#fff3b0"; // 如果選取中，恢復黃色
+                        }
+                    }, 2000);
                 }
             }
-            alert(correctCount === total ? "太強了！完全正確！🎉" : `目前進度：${correctCount} / ${total}`);
+            
+            if (correctCount === total) {
+                alert("太強了！完全正確！🎉");
+            } else {
+                alert(`目前進度：${correctCount} / ${total}`);
+            }
         }
 
         // 鍵盤輸入邏輯：支援跳過黑格的方向鍵導航
