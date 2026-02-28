@@ -11,15 +11,15 @@
         /* 選單頁面樣式 */
         .menu-container { max-width: 800px; width: 100%; text-align: center; margin-top: 50px; }
         
-        /* --- 關鍵修改：新增網格容器 --- */
+        /* 網格容器 */
         .level-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr); /* 五個一排 */
+            grid-template-columns: repeat(5, 1fr);
             gap: 15px;
             margin-top: 30px;
         }
 
-        /* 調整原本的 level-card 樣式以適應網格 */
+        /* 關卡卡片 */
         .level-card { 
             background: white; 
             padding: 25px 10px; 
@@ -38,7 +38,7 @@
         .level-card:hover { transform: translateY(-3px); border: 1px solid var(--primary); }
         .level-card h2 { margin: 0; color: #3d405b; font-size: 1.2rem; }
 
-        /* 行動裝置適應：太窄時自動調整為 2 或 3 排 */
+        /* 手機版適應 */
         @media (max-width: 600px) {
             .level-grid { grid-template-columns: repeat(3, 1fr); }
         }
@@ -46,7 +46,7 @@
 </head>
 <body>
 
-    <div id="menu-view" class="menu-container">
+    <div class="menu-container">
         <h1>韓哥填字遊戲</h1>
         <p>請選擇想挑戰的關卡：</p>
         <hr>
