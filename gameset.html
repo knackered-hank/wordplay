@@ -183,15 +183,27 @@
             setTimeout(() => { isComposing = false; }, 50);
         });
 
+        const mainInput = document.getElementById('mainInput');
+
+        // 監聽注音選字狀態
+        mainInput.addEventListener('compositionstart', () => { 
+            isComposing = true; 
+        });
+
+        mainInput.addEventListener('compositionend', () => { 
+            // 延遲同步狀態，確保 Enter 鍵判斷正確
+            setTimeout(() => { isComposing = false; }, 50);
+        });
+
         mainInput.addEventListener('keydown', (e) => {
             if (!currentCell) return;
 
-            // 核心修正：如果正在選字中，不論按什麼鍵（方向鍵、Enter）都直接 return，交給輸入法處理
+            // 如果正在選字中，程式完全不介入，讓輸入法處理方向鍵與 Enter
             if (isComposing) return;
 
             const [r, c] = currentCell.split(',').map(Number);
             
-            // 方向鍵移動邏輯：只有在「非選字狀態」下才執行
+            // 方向鍵移動邏輯：只有在「非選字狀態」下才執行，且維持原地不自動跳格
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                 e.preventDefault();
                 let nR = r, nC = c;
@@ -211,29 +223,18 @@
                 return;
             }
 
-            // Enter 填字與自動跳格邏輯
+            // Enter 填字邏輯：只填入文字，不自動跳到下一格
             if (e.key === 'Enter') {
                 const val = e.target.value.trim();
                 if (val !== "") {
-                    // 填入文字
+                    // 將文字填入當前格子
                     document.getElementById("text-" + currentCell).innerText = val[0];
+                    // 清空輸入框內容，方便下次輸入，但焦點維持在當前格子
                     e.target.value = "";
-                    
-                    // 自動跳往下一格
-                    let foundNext = false;
-                    for (let row = r; row <= 10; row++) {
-                        let startCol = (row === r) ? c + 1 : 1;
-                        for (let col = startCol; col <= 10; col++) {
-                            if (solutions[`${row},${col}`]) {
-                                selectCell(row, col);
-                                foundNext = true;
-                                break;
-                            }
-                        }
-                        if (foundNext) break;
-                    }
                 }
-            } else if (e.key === 'Backspace' && e.target.value === "") {
+            } 
+            // 退格鍵邏輯：當輸入框為空時，刪除當前格子的文字
+            else if (e.key === 'Backspace' && e.target.value === "") {
                 document.getElementById("text-" + currentCell).innerText = "";
             }
         });
