@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title id="page-title">韓哥填字遊戲</title>
-
     <style>
         body {
             font-family: "Microsoft JhengHei", sans-serif;
@@ -39,6 +38,7 @@
         }
 
         #grid {
+            display: grid;
             border: 4px solid #333;
             background-color: #333;
             box-shadow: 0 8px 16px rgba(0,0,0,0.2);
@@ -49,6 +49,7 @@
             height: 48px;
             position: relative;
             box-sizing: border-box;
+            background-color: #333;
         }
 
         .white-cell {
@@ -57,8 +58,14 @@
             cursor: pointer;
         }
 
-        .black-cell {
-            background-color: #333;
+        .white-cell:hover {
+            background-color: #fdf0d5;
+        }
+
+        .selected {
+            background-color: #f2cc8f !important;
+            outline: 2px solid #e07a5f;
+            z-index: 10;
         }
 
         .cell-text {
@@ -80,6 +87,7 @@
             font-size: 11px;
             color: #666;
             font-weight: bold;
+            pointer-events: none;
         }
 
         .input-area {
@@ -93,35 +101,28 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
-        .input-label {
-            font-weight: bold;
-            color: #3d405b;
-        }
-
         #mainInput {
             flex: 1;
-            font-size: 16px;
-            padding: 8px 5px;
+            font-size: 18px;
+            padding: 8px;
             text-align: center;
             border: 1px solid #ccc;
             border-radius: 5px;
         }
 
         button {
-            padding: 8px 6px;
+            padding: 8px 12px;
             cursor: pointer;
             border: none;
             border-radius: 5px;
             font-weight: bold;
             color: white;
+            transition: 0.2s;
         }
 
         .btn-check { background: #2d6a4f; }
-        .btn-clear-one {
-            background: #ffffff;
-            color: #3d405b;
-            border: 1px solid #ccc;
-        }
+        .btn-check:hover { background: #1b4332; }
+        .btn-clear-one { background: #ffffff; color: #3d405b; border: 1px solid #ccc; }
         .btn-reset { background: #e07a5f; }
 
         .clue-box {
@@ -129,17 +130,19 @@
             background: white;
             padding: 25px;
             border-radius: 12px;
-            height: 500px;
+            height: 520px;
             overflow-y: auto;
             border-top: 5px solid #e07a5f;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         .clue-item {
             margin-bottom: 12px;
-            font-size: 14px;
+            font-size: 15px;
             cursor: pointer;
-            padding: 4px;
+            padding: 6px;
             border-radius: 4px;
+            line-height: 1.4;
         }
 
         .clue-item:hover {
@@ -152,41 +155,44 @@
             color: #e07a5f;
             margin-right: 8px;
         }
+
+        a.back-link {
+            margin-top: 20px;
+            text-decoration: none;
+            color: #3d405b;
+            font-weight: bold;
+        }
     </style>
 </head>
-
 <body>
 
     <h1 id="game-title">載入中...</h1>
 
     <div class="game-wrapper">
-
         <div class="left-column">
             <div id="grid"></div>
 
             <div class="input-area">
-                <span class="input-label">填寫：</span>
-                <input type="text" id="mainInput" autocomplete="off">
+                <span style="font-weight:bold; color:#3d405b; align-self:center;">填寫：</span>
+                <input type="text" id="mainInput" maxlength="1" autocomplete="off">
                 <button class="btn-check" onclick="checkFullBoard()">檢查答案</button>
                 <button class="btn-clear-one" onclick="clearCurrentCell()">🗑️</button>
                 <button class="btn-reset" onclick="location.reload()">清空全部</button>
             </div>
 
-            <a href="index.html">← 返回選單</a>
+            <a href="index.html" class="back-link">← 返回選單</a>
         </div>
 
         <div class="clue-box">
-            <h3>橫行提示</h3>
+            <h3 style="color:#3d405b; border-bottom: 2px solid #f2cc8f; padding-bottom:5px;">橫行提示</h3>
             <div id="across-clues"></div>
 
-            <h3>直行提示</h3>
+            <h3 style="color:#3d405b; border-bottom: 2px solid #f2cc8f; padding-bottom:5px; margin-top:20px;">直行提示</h3>
             <div id="down-clues"></div>
         </div>
-
     </div>
 
 <script>
-
     const urlParams = new URLSearchParams(window.location.search);
     const issueId = urlParams.get('issue') || '001';
 
@@ -195,57 +201,144 @@
     let size = 10;
     let currentCell = null;
 
+    // 載入題目
     fetch(`./puzzles/${issueId}.json`)
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error("找不到題目 JSON 檔案");
+            return res.json();
+        })
         .then(data => {
-
             document.getElementById('game-title').innerText = data.name;
-            size = data.size;
+            size = data.size || 10;
 
             data.cells.forEach(c => {
                 const key = `${c.r},${c.c}`;
                 solutions[key] = c.ans;
-                if (c.label) labels[key] = c.label;
+                if (c.label) labels[key] = String(c.label);
             });
 
             initGrid();
             renderClues("across-clues", data.clues.across);
             renderClues("down-clues", data.clues.down);
+        })
+        .catch(err => {
+            console.error(err);
+            document.getElementById('game-title').innerText = "載入失敗，請確認 puzzles/" + issueId + ".json 是否存在且格式正確。";
         });
 
-    function renderClues(id, clues) {
+    function initGrid() {
+        const grid = document.getElementById('grid');
+        grid.style.gridTemplateColumns = `repeat(${size}, 48px)`;
+        grid.innerHTML = "";
 
+        for (let r = 1; r <= size; r++) {
+            for (let c = 1; c <= size; c++) {
+                const key = `${r},${c}`;
+                const cell = document.createElement('div');
+                cell.className = 'cell ' + (solutions[key] ? 'white-cell' : 'black-cell');
+                cell.id = `cell-${r}-${c}`;
+
+                if (solutions[key]) {
+                    // 標籤
+                    if (labels[key]) {
+                        const lbl = document.createElement('span');
+                        lbl.className = 'num-label';
+                        lbl.innerText = labels[key];
+                        cell.appendChild(lbl);
+                    }
+                    // 文字容器
+                    const txt = document.createElement('div');
+                    txt.className = 'cell-text';
+                    txt.id = `text-${r}-${c}`;
+                    cell.appendChild(txt);
+
+                    cell.onclick = () => selectCell(r, c);
+                }
+                grid.appendChild(cell);
+            }
+        }
+    }
+
+    function selectCell(r, c) {
+        if (currentCell) {
+            document.getElementById(`cell-${currentCell.r}-${currentCell.c}`).classList.remove('selected');
+        }
+        currentCell = { r, c };
+        document.getElementById(`cell-${r}-${c}`).classList.add('selected');
+        
+        const input = document.getElementById('mainInput');
+        input.value = "";
+        input.focus();
+    }
+
+    // 監聽輸入
+    document.getElementById('mainInput').oninput = function(e) {
+        if (!currentCell) return;
+        const val = this.value.trim();
+        if (val) {
+            document.getElementById(`text-${currentCell.r}-${currentCell.c}`).innerText = val;
+            // 自動清空輸入框以便下一次輸入
+            this.value = "";
+        }
+    };
+
+    function renderClues(id, clues) {
         const container = document.getElementById(id);
         container.innerHTML = "";
 
         clues.forEach(clue => {
-
             const div = document.createElement("div");
             div.className = "clue-item";
             div.innerHTML = `<span class="clue-num">${clue.num}</span>${clue.text}`;
 
             div.onclick = () => {
-
                 let targetKey = null;
-
                 for (let key in labels) {
-                    if (labels[key] === clue.num) {
+                    const labelStr = labels[key];
+                    // 核心修正：利用正則表達式，確保 clue.num 是獨立的數字，不被 10 包含
+                    const regex = new RegExp(`(^|[^0-9])${clue.num}([^0-9]|$)`);
+                    if (regex.test(labelStr)) {
                         targetKey = key;
                         break;
                     }
                 }
-
                 if (targetKey) {
                     const [r, c] = targetKey.split(",").map(Number);
                     selectCell(r, c);
                 }
             };
-
             container.appendChild(div);
         });
     }
 
-</script>
+    function checkFullBoard() {
+        let isComplete = true;
+        let isCorrect = true;
 
+        for (let key in solutions) {
+            const [r, c] = key.split(',');
+            const userAns = document.getElementById(`text-${r}-${c}`).innerText;
+            if (!userAns) {
+                isComplete = false;
+            } else if (userAns !== solutions[key]) {
+                isCorrect = false;
+            }
+        }
+
+        if (!isComplete) {
+            alert("還沒填完喔！再接再厲。");
+        } else if (!isCorrect) {
+            alert("有些地方填錯了，檢查一下吧！");
+        } else {
+            alert("恭喜！全部答對了！");
+        }
+    }
+
+    function clearCurrentCell() {
+        if (currentCell) {
+            document.getElementById(`text-${currentCell.r}-${currentCell.c}`).innerText = "";
+        }
+    }
+</script>
 </body>
 </html>
