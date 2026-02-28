@@ -138,13 +138,11 @@
             const textElement = document.getElementById("text-" + key);
             if (!textElement) return;
 
-            const text = textElement.innerText;
-            if (text === "") {
-                cell.style.backgroundColor = "white";
-            } else if (text === solutions[key]) {
-                cell.style.backgroundColor = "#d8f3dc"; // 正確綠色
+            // 平時輸入時，僅恢復為白色（非選中）或維持黃色（選中）
+            if (currentCell === key) {
+                cell.style.backgroundColor = "#fff3b0";
             } else {
-                cell.style.backgroundColor = "#ff4d4d"; // 錯誤紅色
+                cell.style.backgroundColor = "white";
             }
         }
 
@@ -154,27 +152,27 @@
             
             for (let key in solutions) {
                 const cell = document.getElementById("cell-" + key);
-                const textElement = document.getElementById("text-" + key);
-                const text = textElement.innerText;
+                const text = document.getElementById("text-" + key).innerText;
 
                 if (text === solutions[key]) {
                     correctCount++;
-                    cell.style.backgroundColor = "#d8f3dc"; // 正確保持綠色
+                    cell.style.backgroundColor = "#d8f3dc"; // 正確綠
                 } else if (text !== "") {
-                    // 填寫錯誤：亮紅燈兩秒
-                    const originalColor = "white"; 
-                    cell.style.backgroundColor = "#ffcccc"; // 亮紅色
+                    // 填寫錯誤：亮起高明度紅色
+                    cell.style.backgroundColor = "#ff4d4d"; 
                     
                     setTimeout(() => {
-                        // 兩秒後，如果這格不是目前選中的格子，就恢復原色
-                        if (currentCell !== key) {
-                            cell.style.backgroundColor = originalColor;
+                        // 兩秒後恢復：判斷是否正被選中
+                        if (currentCell === key) {
+                            cell.style.backgroundColor = "#fff3b0";
                         } else {
-                            cell.style.backgroundColor = "#fff3b0"; // 如果選取中，恢復黃色
+                            cell.style.backgroundColor = "white";
                         }
                     }, 2000);
                 }
             }
+            alert(correctCount === total ? "太強了！完全正確！🎉" : `目前進度：${correctCount} / ${total}`);
+        }
             
             if (correctCount === total) {
                 alert("太強了！完全正確！🎉");
@@ -188,35 +186,36 @@
             if (!currentCell) return;
             const [r, c] = currentCell.split(',').map(Number);
             
+            // 處理方向鍵導航 (純移動)
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                 e.preventDefault();
                 let nR = r, nC = c;
-                let found = false;
-
-                // 持續往該方向移動，直到找到白格或出界
-                while (nR >= 1 && nR <= 10 && nC >= 1 && nC <= 10) {
+                while (true) {
                     if (e.key === 'ArrowUp') nR--; 
                     else if (e.key === 'ArrowDown') nR++;
                     else if (e.key === 'ArrowLeft') nC--; 
                     else if (e.key === 'ArrowRight') nC++;
 
-                    // 如果新位置有答案(是白格)，就跳轉並停止搜尋
+                    if (nR < 1 || nR > 10 || nC < 1 || nC > 10) break; // 撞牆停止
+
                     if (solutions[`${nR},${nC}`]) {
                         selectCell(nR, nC);
-                        found = true;
                         break;
                     }
                 }
-            } else if (e.key === 'Enter') {
+            } 
+            // 處理 Enter 確認填寫
+            else if (e.key === 'Enter') {
                 const val = e.target.value.trim();
                 if (val !== "") {
                     document.getElementById("text-" + currentCell).innerText = val[0];
-                    updateCellColor(currentCell);
+                    updateCellColor(currentCell); // 僅更新為選中色，不判定對錯
                     e.target.value = "";
                 }
-            } else if (e.key === 'Backspace' && e.target.value === "") {
+            } 
+            // 處理 Backspace
+            else if (e.key === 'Backspace' && e.target.value === "") {
                 document.getElementById("text-" + currentCell).innerText = "";
-                // 刪除後維持選中顏色
                 document.getElementById("cell-" + currentCell).style.backgroundColor = "#fff3b0";
             }
         });
