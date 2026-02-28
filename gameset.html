@@ -14,148 +14,28 @@
             margin: 0;
             min-height: 100vh;
         }
-
-        h1 {
-            color: #3d405b;
-            margin: 20px 0;
-            cursor: default;
-            user-select: none;
-        }
-
-        .game-wrapper {
-            display: flex;
-            gap: 40px;
-            align-items: flex-start;
-            justify-content: center;
-            flex-wrap: wrap;
-            max-width: 1200px;
-            flex: 1; /* 讓內容撐開以推擠 footer */
-        }
-
-        .left-column {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-        }
-
-        #grid {
-            display: grid;
-            border: 4px solid #333;
-            background-color: #333;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-        }
-
-        .cell {
-            width: 48px;
-            height: 48px;
-            position: relative;
-            box-sizing: border-box;
-            background-color: #333;
-        }
-
-        .white-cell {
-            background-color: white;
-            border: 1px solid #ccc;
-            cursor: pointer;
-        }
-
-        .selected {
-            background-color: #f2cc8f !important;
-            box-shadow: inset 0 0 0 4px #e07a5f;
-            z-index: 5;
-        }
-
-        .wrong-flash {
-            background-color: #f8d7da !important;
-            box-shadow: inset 0 0 0 4px #dc3545 !important;
-        }
-
-        .cell-text {
-            color: #2d6a4f;
-            pointer-events: none;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .num-label {
-            position: absolute;
-            top: 1px;
-            left: 2px;
-            font-size: 10px;
-            color: #666;
-            font-weight: bold;
-            pointer-events: none;
-        }
-
-        .input-area {
-            width: 500px;
-            background: #fff;
-            padding: 12px 10px;
-            border-radius: 10px;
-            display: flex;
-            gap: 10px;
-            border: 2px solid #3d405b;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-
-        #mainInput {
-            flex: 1;
-            font-size: 18px;
-            padding: 8px;
-            text-align: center;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            outline: none;
-        }
-
-        button {
-            padding: 8px 15px;
-            cursor: pointer;
-            border: none;
-            border-radius: 5px;
-            font-weight: bold;
-            color: white;
-        }
-
+        h1 { color: #3d405b; margin: 20px 0; cursor: default; user-select: none; }
+        .game-wrapper { display: flex; gap: 40px; align-items: flex-start; justify-content: center; flex-wrap: wrap; max-width: 1200px; flex: 1; }
+        .left-column { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        #grid { display: grid; border: 4px solid #333; background-color: #333; box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
+        .cell { width: 48px; height: 48px; position: relative; box-sizing: border-box; background-color: #333; }
+        .white-cell { background-color: white; border: 1px solid #ccc; cursor: pointer; }
+        .selected { background-color: #f2cc8f !important; box-shadow: inset 0 0 0 4px #e07a5f; z-index: 5; }
+        .wrong-flash { background-color: #f8d7da !important; box-shadow: inset 0 0 0 4px #dc3545 !important; }
+        .cell-text { color: #2d6a4f; pointer-events: none; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; }
+        .num-label { position: absolute; top: 1px; left: 2px; font-size: 10px; color: #666; font-weight: bold; pointer-events: none; }
+        .input-area { width: 500px; background: #fff; padding: 12px 10px; border-radius: 10px; display: flex; gap: 10px; border: 2px solid #3d405b; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        #mainInput { flex: 1; font-size: 18px; padding: 8px; text-align: center; border: 1px solid #ccc; border-radius: 5px; outline: none; }
+        button { padding: 8px 15px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; color: white; }
         .btn-check { background: #2d6a4f; }
         .btn-clear-one { background: #ffffff; color: #3d405b; border: 1px solid #ccc; }
         .btn-reset { background: #e07a5f; }
-
-        .clue-box {
-            width: 380px;
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            height: 520px;
-            overflow-y: auto;
-            border-top: 5px solid #e07a5f;
-        }
-
-        .clue-item {
-            margin-bottom: 12px;
-            font-size: 15px;
-            cursor: pointer;
-            padding: 4px;
-        }
-
-        .clue-item:hover { color: #e07a5f; }
+        .clue-box { width: 380px; background: white; padding: 25px; border-radius: 12px; height: 520px; overflow-y: auto; border-top: 5px solid #e07a5f; }
+        .clue-item { margin-bottom: 12px; font-size: 15px; cursor: pointer; padding: 4px; border-radius: 4px; }
+        .clue-item:hover { color: #e07a5f; background-color: #fdf0d5; }
         .clue-num { font-weight: bold; color: #e07a5f; margin-right: 8px; }
         .back-link { margin-top: 20px; text-decoration: none; color: #3d405b; font-size: 14px; font-weight: bold; }
-
-        footer {
-            margin-top: 50px;
-            padding: 20px;
-            color: #3d405b;
-            font-size: 14px;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
+        footer { margin-top: 50px; padding: 20px; color: #3d405b; font-size: 14px; font-weight: bold; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -165,17 +45,14 @@
     <div class="game-wrapper">
         <div class="left-column">
             <div id="grid"></div>
-
             <div class="input-area">
-                <input type="text" id="mainInput" placeholder="在此輸入文字" autocomplete="off">
+                <input type="text" id="mainInput" placeholder="點擊格子後在此輸入" autocomplete="off">
                 <button class="btn-check" onclick="checkAnswers()">檢查答案</button>
                 <button class="btn-clear-one" onclick="clearCurrentCell()">🗑️</button>
                 <button class="btn-reset" onclick="location.reload()">清空</button>
             </div>
-
             <a href="index.html" class="back-link">← 返回選單</a>
         </div>
-
         <div class="clue-box">
             <h3 style="color:#3d405b; border-bottom: 1px solid #eee;">橫行提示</h3>
             <div id="across-clues"></div>
@@ -189,27 +66,21 @@
 <script>
     const urlParams = new URLSearchParams(window.location.search);
     const issueId = urlParams.get('issue') || '001';
+    let solutions = {}, labels = {}, size = 10, currentCell = null, titleClickCount = 0;
+    let isComposing = false; // 判斷是否正在選字中
 
-    let solutions = {};
-    let labels = {};
-    let size = 10;
-    let currentCell = null;
-    let titleClickCount = 0;
-
-    fetch(`./puzzles/${issueId}.json`)
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('game-title').innerText = data.name;
-            size = data.size || 10;
-            data.cells.forEach(c => {
-                const key = `${c.r},${c.c}`;
-                solutions[key] = c.ans;
-                if (c.label) labels[key] = String(c.label);
-            });
-            initGrid();
-            renderClues("across-clues", data.clues.across);
-            renderClues("down-clues", data.clues.down);
+    fetch(`./puzzles/${issueId}.json`).then(res => res.json()).then(data => {
+        document.getElementById('game-title').innerText = data.name;
+        size = data.size || 10;
+        data.cells.forEach(c => {
+            const key = `${c.r},${c.c}`;
+            solutions[key] = c.ans;
+            if (c.label) labels[key] = String(c.label);
         });
+        initGrid();
+        renderClues("across-clues", data.clues.across);
+        renderClues("down-clues", data.clues.down);
+    });
 
     function initGrid() {
         const grid = document.getElementById('grid');
@@ -242,50 +113,55 @@
     function selectCell(r, c) {
         if (!solutions[`${r},${c}`]) return;
         if (currentCell) document.getElementById(`cell-${currentCell.r}-${currentCell.c}`).classList.remove('selected');
-        
         currentCell = { r, c };
-        const target = document.getElementById(`cell-${r}-${c}`);
-        target.classList.add('selected');
-        target.classList.remove('wrong-flash');
-        
+        document.getElementById(`cell-${r}-${c}`).classList.add('selected');
         const input = document.getElementById('mainInput');
         input.value = "";
         input.focus();
     }
 
-    document.getElementById('mainInput').addEventListener('input', function(e) {
-        if (!currentCell) return;
-        const val = this.value.trim().split('').pop(); // 抓最後一個字
-        if (val) {
-            document.getElementById(`text-${currentCell.r}-${currentCell.c}`).innerText = val;
-            this.value = "";
+    // --- 解決亂填問題的關鍵：選字鎖死 ---
+    const inputField = document.getElementById('mainInput');
+    inputField.addEventListener('compositionstart', () => { isComposing = true; });
+    inputField.addEventListener('compositionend', (e) => {
+        isComposing = false;
+        fillChar(e.data); // 選字結束後填入
+    });
+    inputField.addEventListener('input', (e) => {
+        if (!isComposing && e.inputType !== 'deleteContentBackward') {
+            fillChar(inputField.value);
         }
     });
 
+    function fillChar(val) {
+        if (!currentCell || !val) return;
+        const lastChar = val.trim().slice(-1);
+        if (lastChar) {
+            document.getElementById(`text-${currentCell.r}-${currentCell.c}`).innerText = lastChar;
+            inputField.value = "";
+        }
+    }
+
     document.addEventListener('keydown', (e) => {
-        if (!currentCell) return;
-        if (e.key === "ArrowUp") { e.preventDefault(); moveSelection(-1, 0); }
-        else if (e.key === "ArrowDown") { e.preventDefault(); moveSelection(1, 0); }
-        else if (e.key === "ArrowLeft") { e.preventDefault(); moveSelection(0, -1); }
-        else if (e.key === "ArrowRight") { e.preventDefault(); moveSelection(0, 1); }
-        else if (e.key === "Backspace" && document.activeElement !== document.getElementById('mainInput')) {
+        if (!currentCell || isComposing) return;
+        if (e.key.startsWith("Arrow")) {
+            e.preventDefault();
+            let dr = 0, dc = 0;
+            if (e.key === "ArrowUp") dr = -1;
+            else if (e.key === "ArrowDown") dr = 1;
+            else if (e.key === "ArrowLeft") dc = -1;
+            else if (e.key === "ArrowRight") dc = 1;
+            moveSelection(dr, dc);
+        } else if (e.key === "Backspace" && document.activeElement !== inputField) {
             clearCurrentCell();
         }
     });
 
-    // 修正後的方向鍵邏輯：會自動跳過黑格
     function moveSelection(dr, dc) {
-        let nr = currentCell.r + dr;
-        let nc = currentCell.c + dc;
-
-        // 沿著方向搜尋，直到找到白格或撞牆
+        let nr = currentCell.r + dr, nc = currentCell.c + dc;
         while (nr >= 1 && nr <= size && nc >= 1 && nc <= size) {
-            if (solutions[`${nr},${nc}`]) {
-                selectCell(nr, nc);
-                return;
-            }
-            nr += dr;
-            nc += dc;
+            if (solutions[`${nr},${nc}`]) { selectCell(nr, nc); return; }
+            nr += dr; nc += dc;
         }
     }
 
@@ -294,12 +170,9 @@
             const [r, c] = key.split(',');
             const cell = document.getElementById(`cell-${r}-${c}`);
             const userAns = document.getElementById(`text-${r}-${c}`).innerText;
-            
             if (userAns !== "" && userAns !== solutions[key]) {
                 cell.classList.add('wrong-flash');
-                setTimeout(() => {
-                    cell.classList.remove('wrong-flash');
-                }, 1500);
+                setTimeout(() => { cell.classList.remove('wrong-flash'); }, 1500);
             }
         }
     }
@@ -313,12 +186,14 @@
             div.innerHTML = `<span class="clue-num">${clue.num}</span>${clue.text}`;
             div.onclick = () => {
                 for (let key in labels) {
-                    const regex = new RegExp(`(^|[^0-9])${clue.num}([^0-9]|$)`);
-                    if (regex.test(labels[key])) {
-                        const [r, c] = key.split(",").map(Number);
-                        selectCell(r, c);
-                        break;
+                    let isMatch = false;
+                    if (!isNaN(clue.num)) {
+                        const regex = new RegExp(`(^|[^0-9])${clue.num}([^0-9]|$)`);
+                        isMatch = regex.test(labels[key]);
+                    } else {
+                        isMatch = labels[key].includes(clue.num);
                     }
+                    if (isMatch) { const [r, c] = key.split(",").map(Number); selectCell(r, c); break; }
                 }
             };
             container.appendChild(div);
@@ -326,19 +201,28 @@
     }
 
     function clearCurrentCell() {
-        if (currentCell) {
-            document.getElementById(`text-${currentCell.r}-${currentCell.c}`).innerText = "";
-            document.getElementById(`cell-${currentCell.r}-${currentCell.c}`).classList.remove('wrong-flash');
-        }
+        if (currentCell) document.getElementById(`text-${currentCell.r}-${currentCell.c}`).innerText = "";
     }
 
+    // --- 彩蛋：閃現 1.25 秒 ---
     function handleTitleClick() {
         titleClickCount++;
         if (titleClickCount >= 3) {
+            const currentAnswers = {};
+            // 先備份原本填好的字
             for (let key in solutions) {
                 const [r, c] = key.split(',');
-                document.getElementById(`text-${r}-${c}`).innerText = solutions[key];
+                const txt = document.getElementById(`text-${r}-${c}`);
+                currentAnswers[key] = txt.innerText;
+                txt.innerText = solutions[key]; // 顯示正確答案
             }
+            // 1.25 秒後還原
+            setTimeout(() => {
+                for (let key in solutions) {
+                    const [r, c] = key.split(',');
+                    document.getElementById(`text-${r}-${c}`).innerText = currentAnswers[key];
+                }
+            }, 1250);
             titleClickCount = 0;
         }
     }
