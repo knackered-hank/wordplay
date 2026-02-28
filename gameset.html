@@ -16,19 +16,25 @@
         .cell-text { color: #2d6a4f; pointer-events: none; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:bold; }
         .num-label { position: absolute; top: 2px; left: 4px; font-size: 11px; color: #666; font-weight: bold; pointer-events: none; }
         
-        /* 橫向輸入區優化 */
+        /* 輸入區空間優化 */
         .input-area { 
-            width: 488px; background: #fff; padding: 12px 15px; border-radius: 10px; 
-            display: flex; flex-direction: row; align-items: center; gap: 10px; 
+            width: 500px; /* 稍微加寬一點點 */
+            background: #fff; padding: 12px 10px; border-radius: 10px; 
+            display: flex; flex-direction: row; align-items: center; gap: 8px; 
             border: 2px solid #3d405b; box-sizing: border-box; box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
         }
-        .input-label { font-weight: bold; color: #3d405b; white-space: nowrap; }
-        #mainInput { flex-grow: 1; font-size: 18px; padding: 8px; text-align: center; border: 1px solid #ccc; border-radius: 5px; }
+        .input-label { font-weight: bold; color: #3d405b; white-space: nowrap; font-size: 16px; }
+        #mainInput { flex: 1; min-width: 80px; font-size: 16px; padding: 8px 5px; text-align: center; border: 1px solid #ccc; border-radius: 5px; }
         
-        .btn-group { display: flex; gap: 6px; }
-        button { padding: 8px 10px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; color: white; transition: 0.3s; white-space: nowrap; font-size: 14px; }
+        .btn-group { display: flex; gap: 5px; align-items: center; }
+        button { 
+            padding: 8px 6px; /* 縮小左右內邊距 */
+            cursor: pointer; border: none; border-radius: 5px; 
+            font-weight: bold; color: white; transition: 0.3s; 
+            white-space: nowrap; font-size: 13px; /* 字體稍微調小以容納四個字 */
+        }
         .btn-check { background: #2d6a4f; }
-        .btn-clear-one { background: #ffffff; } /* 垃圾桶按鈕顏色：灰色 */
+        .btn-clear-one { background: #ffffff; padding: 8px 8px; font-size: 16px; } /* 垃圾桶維持圖示大小 */
         .btn-reset { background: #e07a5f; }
         button:hover { opacity: 0.8; }
         
@@ -123,19 +129,17 @@
         function selectCell(r, c) {
             const oldCell = currentCell;
             currentCell = `${r},${c}`;
-            if (oldCell) updateCellColor(oldCell); // 恢復舊格顏色
-            updateCellColor(currentCell); // 高亮新格
+            if (oldCell) updateCellColor(oldCell); 
+            updateCellColor(currentCell); 
             document.getElementById('mainInput').focus();
         }
 
         function updateCellColor(key) {
             const cell = document.getElementById("cell-" + key);
             if (!cell) return;
-            // 修正：明確判定目前選中格為黃色，其餘為白色
             cell.style.backgroundColor = (currentCell === key) ? "#fff3b0" : "white";
         }
 
-        // 新增：清除當前格子內容
         function clearCurrentCell() {
             if (currentCell) {
                 document.getElementById("text-" + currentCell).innerText = "";
@@ -156,8 +160,8 @@
                 } else if (text !== "") {
                     cell.style.backgroundColor = "#ff4d4d"; 
                     setTimeout(() => {
-                        updateCellColor(key); // 1.25秒後恢復
-                    }, 1250);
+                        updateCellColor(key); 
+                    }, 1250); // 已改為 1.25 秒
                 }
             });
             setTimeout(() => {
