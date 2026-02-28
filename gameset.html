@@ -80,6 +80,7 @@
         let solutions = {};
         let labels = {};
         let currentCell = null;
+        let isComposing = false; // 追蹤注音選字狀態
 
         fetch(`./puzzles/${issueId}.json`)
             .then(res => { if (!res.ok) throw new Error(); return res.json(); })
@@ -125,13 +126,13 @@
 
         function selectCell(r, c) {
             const newKey = `${r},${c}`;
-            if (!solutions[newKey]) return; // 如果不是白格就不選
+            if (!solutions[newKey]) return;
             
             const oldKey = currentCell;
             currentCell = newKey;
             
-            if (oldKey) updateCellDisplay(oldKey); // 恢復舊格
-            updateCellDisplay(currentCell); // 高亮新格
+            if (oldKey) updateCellDisplay(oldKey);
+            updateCellDisplay(currentCell);
             
             const input = document.getElementById('mainInput');
             input.focus();
@@ -140,7 +141,6 @@
         function updateCellDisplay(key) {
             const cell = document.getElementById("cell-" + key);
             if (!cell) return;
-            // 優先顯示高亮
             cell.style.backgroundColor = (currentCell === key) ? "#fff3b0" : "white";
         }
 
@@ -171,17 +171,21 @@
             }, 100);
         }
 
-        // 鍵盤移動邏輯 - 修正重點
-        document.getElementById('mainInput').addEventListener('keydown', (e) => {
+        const mainInput = document.getElementById('mainInput');
+
+        // 監聽注音選字事件
+        mainInput.addEventListener('compositionstart', () => { isComposing = true; });
+        mainInput.addEventListener('compositionend', () => { isComposing = false; });
+
+        mainInput.addEventListener('keydown', (e) => {
             if (!currentCell) return;
             const [r, c] = currentCell.split(',').map(Number);
             
+            // 方向鍵邏輯：隨時可跳格
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
                 e.preventDefault();
                 let nR = r, nC = c;
                 let found = false;
-                
-                // 往該方向搜尋最近的白格
                 while (!found) {
                     if (e.key === 'ArrowUp') nR--; 
                     else if (e.key === 'ArrowDown') nR++;
@@ -194,11 +198,38 @@
                         found = true;
                     }
                 }
-            } else if (e.key === 'Enter') {
+                return;
+            }
+
+            // 只有在非選字狀態下按下 Enter，才執行填字與跳格
+            if (e.key === 'Enter') {
+                if (isComposing) return; // 選字中不反應
+
                 const val = e.target.value.trim();
                 if (val !== "") {
+                    // 填入第一個字
                     document.getElementById("text-" + currentCell).innerText = val[0];
                     e.target.value = "";
+                    
+                    // 自動跳往右邊或下邊的一格（優先往右，若右邊沒格則往左搜尋下一個起點）
+                    let nR = r, nC = c + 1;
+                    if (nC > 10 || !solutions[`${nR},${nC}`]) {
+                        // 如果右邊沒格了，尋找下一個橫行的第一個白格
+                        let foundNext = false;
+                        for (let row = r; row <= 10; row++) {
+                            let startCol = (row === r) ? c + 1 : 1;
+                            for (let col = startCol; col <= 10; col++) {
+                                if (solutions[`${row},${col}`]) {
+                                    selectCell(row, col);
+                                    foundNext = true;
+                                    break;
+                                }
+                            }
+                            if (foundNext) break;
+                        }
+                    } else {
+                        selectCell(nR, nC);
+                    }
                 }
             } else if (e.key === 'Backspace' && e.target.value === "") {
                 document.getElementById("text-" + currentCell).innerText = "";
