@@ -5,11 +5,11 @@
     <title id="page-title">韓哥填字遊戲</title>
     <style>
         /* 基礎樣式設定 */
-        body { font-family: "Microsoft JhengHei", sans-serif; background-color: #f4f1de; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        body { font-family: "Microsoft JhengHei", sans-serif; background-color: #f4f1de; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
         
-        h1 { color: #3d405b; margin-bottom: 20px; cursor: default; user-select: none; }
+        h1 { color: #3d405b; margin: 20px 0; cursor: default; user-select: none; }
         
-        .game-wrapper { display: flex; gap: 40px; align-items: flex-start; justify-content: center; flex-wrap: wrap; }
+        .game-wrapper { display: flex; gap: 40px; align-items: flex-start; justify-content: center; flex-wrap: wrap; max-width: 1200px; }
         .left-column { display: flex; flex-direction: column; align-items: center; gap: 20px; }
         
         /* 網格系統 */
@@ -20,39 +20,56 @@
         .cell-text { color: #2d6a4f; pointer-events: none; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:bold; }
         .num-label { position: absolute; top: 2px; left: 4px; font-size: 11px; color: #666; font-weight: bold; pointer-events: none; }
         
-        /* 輸入與按鈕區 */
-        .input-area { width: 488px; background: #fff; padding: 15px; border-radius: 10px; display: flex; gap: 10px; align-items: center; border: 2px solid #3d405b; box-sizing: border-box; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        #mainInput { flex-grow: 1; font-size: 18px; padding: 8px; text-align: center; border: 1px solid #ccc; border-radius: 5px; }
-        button { padding: 8px 12px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; color: white; transition: 0.3s; }
+        /* 橫向輸入與按鈕區 (優化部分) */
+        .input-area { 
+            width: 488px; 
+            background: #fff; 
+            padding: 12px 15px; 
+            border-radius: 10px; 
+            display: flex; 
+            flex-direction: row; /* 確保橫向 */
+            align-items: center; 
+            gap: 12px; 
+            border: 2px solid #3d405b; 
+            box-sizing: border-box; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+        }
+        .input-label { font-weight: bold; color: #3d405b; white-space: nowrap; }
+        #mainInput { flex-grow: 1; font-size: 18px; padding: 8px; text-align: center; border: 1px solid #ccc; border-radius: 5px; min-width: 100px; }
+        .btn-group { display: flex; gap: 8px; }
+        button { padding: 8px 12px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; color: white; transition: 0.3s; white-space: nowrap; }
         .btn-check { background: #2d6a4f; }
+        .btn-check:hover { background: #1b4332; }
         .btn-reset { background: #e07a5f; }
+        .btn-reset:hover { background: #c35a44; }
         
         /* 提示區域 */
-        .clue-box { width: 380px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); height: 600px; overflow-y: auto; border-top: 5px solid #e07a5f; }
+        .clue-box { width: 380px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); height: 500px; overflow-y: auto; border-top: 5px solid #e07a5f; }
         .clue-section h3 { border-bottom: 2px solid #e07a5f; padding-bottom: 8px; color: #3d405b; margin-top: 0; }
         .clue-item { margin-bottom: 12px; font-size: 14px; line-height: 1.5; color: #444; cursor: pointer; padding: 4px; border-radius: 4px; }
         .clue-num { font-weight: bold; color: #e07a5f; margin-right: 8px; }
         .clue-item:hover { background-color: #fdf0d5; color: #e07a5f; }
-        .back-link { margin-bottom: 10px; text-decoration: none; color: #e07a5f; font-weight: bold; }
+        .back-link { margin-top: 10px; text-decoration: none; color: #e07a5f; font-weight: bold; align-self: flex-start; }
     </style>
 </head>
 <body>
 
-    <a href="index.html" class="back-link">← 返回選單</a>
     <h1 id="game-title">載入中...</h1>
 
     <div class="game-wrapper">
         <div class="left-column">
             <div id="grid"></div>
             <div class="input-area">
-                <span style="font-weight: bold; color: #3d405b;">填寫：</span>
-                <input type="text" id="mainInput" placeholder="輸入內容後按下Enter">
+                <span class="input-label">填寫：</span>
+                <input type="text" id="mainInput" placeholder="輸入後按Enter">
                 <div class="btn-group">
                     <button class="btn-check" onclick="checkFullBoard()">檢查答案</button>
-                    <button class="btn-reset" onclick="location.reload()">清空所有答案</button>
+                    <button class="btn-reset" onclick="location.reload()">清空</button>
                 </div>
             </div>
+            <a href="index.html" class="back-link">← 返回選單</a>
         </div>
+        
         <div class="clue-box" id="clue-box">
             <div class="clue-section">
                 <h3>橫行提示</h3>
@@ -72,8 +89,12 @@
         let labels = {};
         let currentCell = null;
 
+        // 讀取 JSON 並初始化
         fetch(`./puzzles/${issueId}.json`)
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error(`找不到檔案: ./puzzles/${issueId}.json`);
+                return res.json();
+            })
             .then(data => {
                 document.getElementById('game-title').innerText = data.name;
                 document.title = data.name;
@@ -86,7 +107,11 @@
                 renderClues('across-clues', data.clues.across);
                 renderClues('down-clues', data.clues.down);
             })
-            .catch(err => alert("載入關卡失敗，請檢查 puzzles 資料夾。"));
+            .catch(err => {
+                console.error(err);
+                document.getElementById('game-title').innerText = "載入失敗";
+                alert("無法載入關卡，請確認檔案路徑是否正確。");
+            });
 
         function initGrid() {
             const grid = document.getElementById('grid');
@@ -125,48 +150,38 @@
             document.getElementById('mainInput').focus();
         }
 
-        // 修改：平時僅恢復基礎色，不判定對錯
         function updateCellColor(key) {
             const cell = document.getElementById("cell-" + key);
             if (!cell) return;
             cell.style.backgroundColor = (currentCell === key) ? "#fff3b0" : "white";
         }
 
-        // 修改：按下檢查按鈕才觸發變色與亮紅燈
         function checkFullBoard() {
             let correctCount = 0;
-            let total = Object.keys(solutions).length;
+            const keys = Object.keys(solutions);
+            let total = keys.length;
             
-            for (let key in solutions) {
+            keys.forEach(key => {
                 const cell = document.getElementById("cell-" + key);
                 const text = document.getElementById("text-" + key).innerText;
 
                 if (text === solutions[key]) {
                     correctCount++;
-                    cell.style.backgroundColor = "#d8f3dc"; // 正確綠
+                    cell.style.backgroundColor = "#d8f3dc"; 
                 } else if (text !== "") {
-                    cell.style.backgroundColor = "#ff4d4d"; // 錯誤亮紅燈
-                    
+                    cell.style.backgroundColor = "#ff4d4d"; 
                     setTimeout(() => {
-                        if (currentCell === key) {
-                            cell.style.backgroundColor = "#fff3b0";
-                        } else {
-                            cell.style.backgroundColor = "white";
-                        }
+                        updateCellColor(key);
                     }, 2000);
                 }
-            }
-            // 延遲一點顯示訊息，讓玩家先看到格子的變化
+            });
+
             setTimeout(() => {
-                if (correctCount === total) {
-                    alert("太強了！完全正確！🎉");
-                } else {
-                    alert(`目前進度：${correctCount} / ${total}`);
-                }
+                if (correctCount === total) alert("太強了！完全正確！🎉");
+                else alert(`目前進度：${correctCount} / ${total}`);
             }, 100);
         }
 
-        // 鍵盤邏輯優化：區分方向鍵導航與 Enter 填寫
         document.getElementById('mainInput').addEventListener('keydown', (e) => {
             if (!currentCell) return;
             const [r, c] = currentCell.split(',').map(Number);
@@ -204,6 +219,7 @@
         function renderClues(id, clues) {
             const container = document.getElementById(id);
             container.innerHTML = "";
+            if (!clues) return;
             clues.forEach(c => {
                 const div = document.createElement('div');
                 div.className = 'clue-item';
@@ -218,21 +234,6 @@
                 container.appendChild(div);
             });
         }
-
-        // 彩蛋保持原樣
-        let clicks = 0;
-        document.getElementById('game-title').onclick = () => {
-            if (++clicks === 3) {
-                clicks = 0;
-                for (let key in solutions) {
-                    const d = document.getElementById("text-" + key);
-                    const old = d.innerText;
-                    d.innerText = solutions[key];
-                    d.style.color = "#e07a5f";
-                    setTimeout(() => { d.innerText = old; d.style.color = "#2d6a4f"; }, 3000);
-                }
-            }
-        };
     </script>
 </body>
 </html>
