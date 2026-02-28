@@ -9,23 +9,39 @@
         body { font-family: "Microsoft JhengHei", sans-serif; background-color: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding: 20px; }
         
         /* 選單頁面樣式 */
-        .menu-container { max-width: 600px; width: 100%; text-align: center; margin-top: 50px; }
-        .level-card { background: white; margin: 15px 0; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s; text-decoration: none; display: block; color: inherit; }
-        .level-card:hover { transform: translateY(-3px); border: 1px solid var(--primary); }
-        .level-card h2 { margin: 0; color: #3d405b; }
-        .level-card p { margin: 10px 0 0; color: #666; font-size: 14px; }
+        .menu-container { max-width: 800px; width: 100%; text-align: center; margin-top: 50px; }
+        
+        /* --- 關鍵修改：新增網格容器 --- */
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); /* 五個一排 */
+            gap: 15px;
+            margin-top: 30px;
+        }
 
-        /* 遊戲模式樣式 (原本的樣式) */
-        .game-container { display: none; gap: 30px; flex-wrap: wrap; justify-content: center; }
-        #grid { display: grid; border: 3px solid var(--grid-bg); background-color: var(--grid-bg); gap: 1px; }
-        .cell { width: 45px; height: 45px; position: relative; }
-        .white-cell { background-color: white; }
-        .black-cell { background-color: var(--grid-bg); }
-        .cell input { width: 100%; height: 100%; border: none; text-align: center; font-size: 22px; font-weight: bold; background: transparent; outline: none; }
-        .num-label { position: absolute; top: 2px; left: 2px; font-size: 10px; color: #888; pointer-events: none; }
-        .clues-section { width: 320px; background: white; padding: 20px; border-radius: 12px; }
-        .clue-group h3 { border-left: 5px solid var(--primary); padding-left: 10px; }
-        .back-btn { margin-bottom: 20px; text-decoration: none; color: var(--primary); font-weight: bold; display: none; }
+        /* 調整原本的 level-card 樣式以適應網格 */
+        .level-card { 
+            background: white; 
+            padding: 25px 10px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+            cursor: pointer; 
+            transition: transform 0.2s, border 0.2s; 
+            text-decoration: none; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            color: inherit; 
+            border: 1px solid transparent;
+        }
+        
+        .level-card:hover { transform: translateY(-3px); border: 1px solid var(--primary); }
+        .level-card h2 { margin: 0; color: #3d405b; font-size: 1.2rem; }
+
+        /* 行動裝置適應：太窄時自動調整為 2 或 3 排 */
+        @media (max-width: 600px) {
+            .level-grid { grid-template-columns: repeat(3, 1fr); }
+        }
     </style>
 </head>
 <body>
@@ -34,115 +50,20 @@
         <h1>韓哥填字遊戲</h1>
         <p>請選擇想挑戰的關卡：</p>
         <hr>
-        <a href="gameset.html?issue=001" class="level-card">
-            <h2>第一期</h2>
-        </a>
-        <a href="gameset.html?issue=002" class="level-card">
-            <h2>第二期</h2>
-        </a>
-        <a href="gameset.html?issue=003" class="level-card">
-            <h2>第三期</h2>
-        </a>
-        <a href="gameset.html?issue=004" class="level-card">
-            <h2>第四期</h2>
-        </a>
-        <a href="gameset.html?issue=005" class="level-card">
-            <h2>第五期</h2>
-        </a>
-        <a href="gameset.html?issue=006" class="level-card">
-            <h2>第六期</h2>
-        </a>
-        <a href="gameset.html?issue=007" class="level-card">
-            <h2>第七期</h2>
-        </a>
-        <a href="gameset.html?issue=008" class="level-card">
-            <h2>第八期</h2>
-        </a>
-        <a href="gameset.html?issue=009" class="level-card">
-            <h2>第九期</h2>
-        </a>
-    </div>
-
-    <a href="index.html" id="back-to-menu" class="back-btn">← 回選單</a>
-    <div id="game-view" class="game-container">
-        <div class="header">
-            <h1 id="game-title">載入中...</h1>
-            <p id="game-issue"></p>
-        </div>
-        <div style="display: flex; gap: 30px; flex-wrap: wrap;">
-            <div id="grid"></div>
-            <div class="clues-section">
-                <div class="clue-group"><h3>橫向提示</h3><div id="across-clues"></div></div>
-                <div class="clue-group" style="margin-top: 25px;"><h3>直向提示</h3><div id="down-clues"></div></div>
-            </div>
+        <div class="level-grid">
+            <a href="gameset.html?issue=001" class="level-card"><h2>一</h2></a>
+            <a href="gameset.html?issue=002" class="level-card"><h2>二</h2></a>
+            <a href="gameset.html?issue=003" class="level-card"><h2>三</h2></a>
+            <a href="gameset.html?issue=004" class="level-card"><h2>四</h2></a>
+            <a href="gameset.html?issue=005" class="level-card"><h2>五</h2></a>
+            <a href="gameset.html?issue=006" class="level-card"><h2>六</h2></a>
+            <a href="gameset.html?issue=007" class="level-card"><h2>七</h2></a>
+            <a href="gameset.html?issue=008" class="level-card"><h2>八</h2></a>
+            <a href="gameset.html?issue=009" class="level-card"><h2>九</h2></a>
         </div>
     </div>
-    <div style="margin-top: 50px; font-size: 12px; color: #888; text-align: center;">◎2026 韓哥填字遊戲
-    </div>
 
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const issueId = urlParams.get('issue');
+    <div style="margin-top: 80px; font-size: 12px; color: #888; text-align: center;">◎2026 韓哥填字遊戲</div>
 
-        if (issueId) {
-            // 進入遊戲模式
-            document.getElementById('menu-view').style.display = 'none';
-            document.getElementById('game-view').style.display = 'flex';
-            document.getElementById('back-to-menu').style.display = 'block';
-            loadGame(issueId);
-        }
-
-        function loadGame(id) {
-            fetch(`./puzzles/${id}.json`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('game-title').innerText = data.name;
-                    document.getElementById('game-issue').innerText = `第 ${data.id} 期`;
-                    setupGrid(data);
-                })
-                .catch(err => {
-                    document.getElementById('game-title').innerText = "找不到關卡";
-                });
-        }
-
-        function setupGrid(data) {
-            const grid = document.getElementById('grid');
-            grid.style.gridTemplateColumns = `repeat(${data.size}, 45px)`;
-            for (let r = 1; r <= data.size; r++) {
-                for (let c = 1; c <= data.size; c++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'cell';
-                    const found = data.cells.find(x => x.r === r && x.c === c);
-                    if (found) {
-                        cell.classList.add('white-cell');
-                        const input = document.createElement('input');
-                        input.maxLength = 1;
-                        cell.appendChild(input);
-                        if (found.label) {
-                            const label = document.createElement('span');
-                            label.className = 'num-label';
-                            label.innerText = found.label;
-                            cell.appendChild(label);
-                        }
-                    } else {
-                        cell.classList.add('black-cell');
-                    }
-                    grid.appendChild(cell);
-                }
-            }
-            renderClues('across-clues', data.clues.across);
-            renderClues('down-clues', data.clues.down);
-        }
-
-        function renderClues(elementId, clues) {
-            const container = document.getElementById(elementId);
-            clues.forEach(c => {
-                const div = document.createElement('div');
-                div.className = 'clue-text';
-                div.innerHTML = `<span class="clue-idx">${c.num}</span>${c.text}`;
-                container.appendChild(div);
-            });
-        }
-    </script>
 </body>
 </html>
