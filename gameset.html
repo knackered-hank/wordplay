@@ -67,20 +67,37 @@
     const urlParams = new URLSearchParams(window.location.search);
     const issueId = urlParams.get('issue') || '001';
     let solutions = {}, labels = {}, size = 10, currentCell = null, titleClickCount = 0;
-    let isComposing = false; // 判斷是否正在選字中
+    let isComposing = false; 
+    let startTime = Date.now(); // 紀錄開始時間
+    let gameFinished = false;
 
-    fetch(`./puzzles/${issueId}.json`).then(res => res.json()).then(data => {
-        document.getElementById('game-title').innerText = data.name;
-        size = data.size || 10;
-        data.cells.forEach(c => {
-            const key = `${c.r},${c.c}`;
-            solutions[key] = c.ans;
-            if (c.label) labels[key] = String(c.label);
+    // --- 自動判定資料夾路徑 ---
+    const issueNum = parseInt(issueId);
+    let folder = "001-010"; // 預設
+    if (issueNum >= 11 && issueNum <= 20) folder = "011-020";
+    else if (issueNum >= 21 && issueNum <= 30) folder = "021-030";
+
+    fetch(`./puzzles/${folder}/${issueId}.json`)
+        .then(res => {
+            if (!res.ok) throw new Error("找不到檔案");
+            return res.json();
+        })
+        .then(data => {
+            document.getElementById('game-title').innerText = data.name;
+            size = data.size || 10;
+            data.cells.forEach(c => {
+                const key = `${c.r},${c.c}`;
+                solutions[key] = c.ans;
+                if (c.label) labels[key] = String(c.label);
+            });
+            initGrid();
+            renderClues("across-clues", data.clues.across);
+            renderClues("down-clues", data.clues.down);
+        })
+        .catch(err => {
+            document.getElementById('game-title').innerText = "關卡製作中...";
+            console.error(err);
         });
-        initGrid();
-        renderClues("across-clues", data.clues.across);
-        renderClues("down-clues", data.clues.down);
-    });
 
     function initGrid() {
         const grid = document.getElementById('grid');
@@ -120,12 +137,11 @@
         input.focus();
     }
 
-    // --- 解決亂填問題的關鍵：選字鎖死 ---
     const inputField = document.getElementById('mainInput');
     inputField.addEventListener('compositionstart', () => { isComposing = true; });
     inputField.addEventListener('compositionend', (e) => {
         isComposing = false;
-        fillChar(e.data); // 選字結束後填入
+        fillChar(e.data);
     });
     inputField.addEventListener('input', (e) => {
         if (!isComposing && e.inputType !== 'deleteContentBackward') {
@@ -165,15 +181,36 @@
         }
     }
 
+    // --- 修改後的檢查答案功能 (含計時) ---
     function checkAnswers() {
+        if (gameFinished) return;
+        let allCorrect = true;
+        let hasWrong = false;
+
         for (let key in solutions) {
             const [r, c] = key.split(',');
             const cell = document.getElementById(`cell-${r}-${c}`);
             const userAns = document.getElementById(`text-${r}-${c}`).innerText;
-            if (userAns !== "" && userAns !== solutions[key]) {
-                cell.classList.add('wrong-flash');
-                setTimeout(() => { cell.classList.remove('wrong-flash'); }, 1500);
+            
+            if (userAns !== solutions[key]) {
+                allCorrect = false;
+                if (userAns !== "") {
+                    hasWrong = true;
+                    cell.classList.add('wrong-flash');
+                    setTimeout(() => { cell.classList.remove('wrong-flash'); }, 1500);
+                }
             }
+        }
+
+        if (allCorrect) {
+            gameFinished = true;
+            const diff = Math.floor((Date.now() - startTime) / 1000);
+            const m = Math.floor(diff / 60);
+            const s = diff % 60;
+            const timeStr = m > 0 ? `${m} 分 ${s} 秒` : `${s} 秒`;
+            setTimeout(() => { alert(`恭喜通關！🎉\n本次挑戰耗時：${timeStr}`); }, 300);
+        } else if (!hasWrong) {
+            alert("還沒填完喔！");
         }
     }
 
@@ -204,19 +241,16 @@
         if (currentCell) document.getElementById(`text-${currentCell.r}-${currentCell.c}`).innerText = "";
     }
 
-    // --- 彩蛋：閃現 1.25 秒 ---
     function handleTitleClick() {
         titleClickCount++;
         if (titleClickCount >= 3) {
             const currentAnswers = {};
-            // 先備份原本填好的字
             for (let key in solutions) {
                 const [r, c] = key.split(',');
                 const txt = document.getElementById(`text-${r}-${c}`);
                 currentAnswers[key] = txt.innerText;
-                txt.innerText = solutions[key]; // 顯示正確答案
+                txt.innerText = solutions[key];
             }
-            // 1.25 秒後還原
             setTimeout(() => {
                 for (let key in solutions) {
                     const [r, c] = key.split(',');
