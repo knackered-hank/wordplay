@@ -77,13 +77,8 @@
     const folder = `${String(startRange).padStart(3, '0')}-${String(endRange).padStart(3, '0')}`;
     const targetUrl = `./puzzles/${folder}/${issueId}.json`;
 
-    console.log(`[系統] 正在請求第 ${issueNum} 關，預計路徑: ${targetUrl}`);
-
     fetch(targetUrl)
-        .then(res => {
-            if (!res.ok) throw new Error(`找不到檔案：${targetUrl}`);
-            return res.json();
-        })
+        .then(res => { if (!res.ok) throw new Error("Load Fail"); return res.json(); })
         .then(data => {
             document.getElementById('game-title').innerText = data.name;
             size = data.size || 10;
@@ -98,7 +93,6 @@
         })
         .catch(err => {
             document.getElementById('game-title').innerText = "關卡還沒準備好喔 (404)";
-            console.error("載入失敗:", err);
         });
 
     function initGrid() {
@@ -183,7 +177,7 @@
         }
     }
 
-    // --- 修改後的檢查功能：顯示進度 ---
+    // --- 修改後的檢查功能：進度判斷邏輯 ---
     function checkAnswers() {
         if (gameFinished) return;
         
@@ -198,7 +192,7 @@
             const userAns = document.getElementById(`text-${r}-${c}`).innerText.trim();
             
             if (userAns !== "") {
-                filledCount++; // 計算已填寫的格子
+                filledCount++; 
             }
 
             if (userAns !== solutions[key]) {
@@ -219,8 +213,18 @@
             const timeStr = m > 0 ? `${m} 分 ${s} 秒` : `${s} 秒`;
             setTimeout(() => { alert(`恭喜通關！🎉\n本次挑戰耗時：${timeStr}`); }, 300);
         } else {
-            // 不論有無錯誤，只要沒全對就顯示進度
-            alert(`目前進度：${filledCount} / ${totalCells}\n${hasWrong ? "（包含錯誤的答案喔！）" : "加油，再接再厲！"}`);
+            // 進度訊息邏輯
+            let message = "";
+            const threshold = Math.ceil(totalCells / 2); // 總格數的一半 (無條件進位)
+
+            if (filledCount >= threshold) {
+                message = "帥喔，快搞定了！";
+            } else {
+                message = "加油，再接再厲！";
+            }
+
+            const errorNote = hasWrong ? "\n（裡面有填錯的字喔！）" : "";
+            alert(`${message}\n目前進度：${filledCount} / ${totalCells}${errorNote}`);
         }
     }
 
