@@ -71,13 +71,9 @@
     let startTime = Date.now();
     let gameFinished = false;
 
-    // --- 【核心改動】高效率自動判定資料夾路徑 ---
     const issueNum = parseInt(issueId);
-    // 計算抽屜範圍，例如 11 關 -> start: 11, end: 20
     const startRange = Math.floor((issueNum - 1) / 10) * 10 + 1;
     const endRange = startRange + 9;
-    
-    // 格式化為 001-010, 011-020 等字串
     const folder = `${String(startRange).padStart(3, '0')}-${String(endRange).padStart(3, '0')}`;
     const targetUrl = `./puzzles/${folder}/${issueId}.json`;
 
@@ -187,14 +183,24 @@
         }
     }
 
+    // --- 修改後的檢查功能：顯示進度 ---
     function checkAnswers() {
         if (gameFinished) return;
+        
+        let totalCells = Object.keys(solutions).length;
+        let filledCount = 0;
         let allCorrect = true;
         let hasWrong = false;
+
         for (let key in solutions) {
             const [r, c] = key.split(',');
             const cell = document.getElementById(`cell-${r}-${c}`);
-            const userAns = document.getElementById(`text-${r}-${c}`).innerText;
+            const userAns = document.getElementById(`text-${r}-${c}`).innerText.trim();
+            
+            if (userAns !== "") {
+                filledCount++; // 計算已填寫的格子
+            }
+
             if (userAns !== solutions[key]) {
                 allCorrect = false;
                 if (userAns !== "") {
@@ -204,6 +210,7 @@
                 }
             }
         }
+
         if (allCorrect) {
             gameFinished = true;
             const diff = Math.floor((Date.now() - startTime) / 1000);
@@ -211,8 +218,9 @@
             const s = diff % 60;
             const timeStr = m > 0 ? `${m} 分 ${s} 秒` : `${s} 秒`;
             setTimeout(() => { alert(`恭喜通關！🎉\n本次挑戰耗時：${timeStr}`); }, 300);
-        } else if (!hasWrong) {
-            alert("還沒填完喔！");
+        } else {
+            // 不論有無錯誤，只要沒全對就顯示進度
+            alert(`目前進度：${filledCount} / ${totalCells}\n${hasWrong ? "（包含錯誤的答案喔！）" : "加油，再接再厲！"}`);
         }
     }
 
