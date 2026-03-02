@@ -68,18 +68,24 @@
     const issueId = urlParams.get('issue') || '001';
     let solutions = {}, labels = {}, size = 10, currentCell = null, titleClickCount = 0;
     let isComposing = false; 
-    let startTime = Date.now(); // 紀錄開始時間
+    let startTime = Date.now();
     let gameFinished = false;
 
-    // --- 自動判定資料夾路徑 ---
+    // --- 【核心改動】高效率自動判定資料夾路徑 ---
     const issueNum = parseInt(issueId);
-    let folder = "001-010"; // 預設
-    if (issueNum >= 11 && issueNum <= 20) folder = "011-020";
-    else if (issueNum >= 21 && issueNum <= 30) folder = "021-030";
+    // 計算抽屜範圍，例如 11 關 -> start: 11, end: 20
+    const startRange = Math.floor((issueNum - 1) / 10) * 10 + 1;
+    const endRange = startRange + 9;
+    
+    // 格式化為 001-010, 011-020 等字串
+    const folder = `${String(startRange).padStart(3, '0')}-${String(endRange).padStart(3, '0')}`;
+    const targetUrl = `./puzzles/${folder}/${issueId}.json`;
 
-    fetch(`./puzzles/${folder}/${issueId}.json`)
+    console.log(`[系統] 正在請求第 ${issueNum} 關，預計路徑: ${targetUrl}`);
+
+    fetch(targetUrl)
         .then(res => {
-            if (!res.ok) throw new Error("找不到檔案");
+            if (!res.ok) throw new Error(`找不到檔案：${targetUrl}`);
             return res.json();
         })
         .then(data => {
@@ -95,8 +101,8 @@
             renderClues("down-clues", data.clues.down);
         })
         .catch(err => {
-            document.getElementById('game-title').innerText = "關卡製作中...等我一下啦";
-            console.error(err);
+            document.getElementById('game-title').innerText = "關卡還沒準備好喔 (404)";
+            console.error("載入失敗:", err);
         });
 
     function initGrid() {
@@ -181,17 +187,14 @@
         }
     }
 
-    // --- 修改後的檢查答案功能 (含計時) ---
     function checkAnswers() {
         if (gameFinished) return;
         let allCorrect = true;
         let hasWrong = false;
-
         for (let key in solutions) {
             const [r, c] = key.split(',');
             const cell = document.getElementById(`cell-${r}-${c}`);
             const userAns = document.getElementById(`text-${r}-${c}`).innerText;
-            
             if (userAns !== solutions[key]) {
                 allCorrect = false;
                 if (userAns !== "") {
@@ -201,7 +204,6 @@
                 }
             }
         }
-
         if (allCorrect) {
             gameFinished = true;
             const diff = Math.floor((Date.now() - startTime) / 1000);
