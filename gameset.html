@@ -295,9 +295,9 @@
             if (userAns === solutions[key]) {
                 correctCount++;
             } else if (userAns !== "") {
-                // 亮紅燈 1.25 秒
+                // 亮紅燈 1.75 秒
                 cellEl.classList.add('error-flash');
-                setTimeout(() => { cellEl.classList.remove('error-flash'); }, 1250);
+                setTimeout(() => { cellEl.classList.remove('error-flash'); }, 1750);
             }
         }
 
