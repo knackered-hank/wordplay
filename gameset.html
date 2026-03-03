@@ -19,7 +19,7 @@
             box-sizing: border-box;
         }
 
-        /* 懸浮輸入氣泡樣式 */
+        /* 懸浮輸入氣泡 */
         #floating-input-container {
             position: absolute;
             display: none;
@@ -42,7 +42,7 @@
             justify-content: center;
             align-items: center;
             width: 100%;
-            max-width: 1200px;
+            max-width: 1100px;
             position: relative;
             margin: 20px 0;
         }
@@ -50,17 +50,23 @@
         h1 { color: var(--secondary); margin: 0; font-size: 32px; font-weight: 900; }
         #clue-trigger { display: none; }
 
+        /* --- 電腦版核心佈局修正 --- */
         .game-wrapper { 
             display: flex; 
             flex-direction: row; 
-            gap: 40px; 
+            gap: 25px; /* 縮減棋盤與提示的間距 */
             align-items: flex-start; 
             justify-content: center; 
-            width: 100%; 
-            max-width: 1300px;
+            width: 95%; 
+            max-width: 1100px; /* 縮小最大寬度，讓整體更緊湊 */
         }
 
-        .left-column { display: flex; flex-direction: column; align-items: center; }
+        .left-column { 
+            flex: 0 0 auto; /* 固定左側寬度，不隨意伸展 */
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
 
         #grid { 
             display: grid; 
@@ -88,10 +94,13 @@
         .btn-clear-one { background: #ffffff; color: var(--secondary); border: 1px solid #ccc; }
         .btn-reset { background: var(--primary); }
 
+        /* 提示盒寬度調整 */
         .clue-box { 
-            flex: 0 1 450px; background: white; padding: 25px; border-radius: 15px; 
-            max-height: 70vh; overflow-y: auto; border-top: 6px solid var(--primary); 
+            flex: 0 1 380px; /* 寬度微調，適配 1100px 的容器 */
+            background: white; padding: 25px; border-radius: 15px; 
+            max-height: 75vh; overflow-y: auto; border-top: 6px solid var(--primary); 
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            box-sizing: border-box;
         }
 
         .back-link { margin-top: 15px; text-decoration: none; color: var(--secondary); font-weight: bold; }
@@ -104,18 +113,18 @@
                 background: var(--secondary); color: white; padding: 6px 12px; 
                 border-radius: 15px; font-size: 14px;
             }
-            .game-wrapper { flex-direction: column; align-items: center; gap: 0; }
+            .game-wrapper { flex-direction: column; align-items: center; gap: 0; width: 100%; }
             h1 { font-size: 26px; }
 
             #grid { transform: scale(0.8); transform-origin: top center; margin-bottom: -90px; }
 
-            /* 手機版隱藏底部長條輸入框，改用氣泡 */
             #mainInput { display: none; }
             .input-area { width: 92vw; margin-top: 10px; justify-content: center; }
             
             .clue-box {
                 display: none; position: fixed; top: 50%; left: 50%;
                 transform: translate(-50%, -50%); width: 90vw; height: 75vh; z-index: 1001;
+                flex: none;
             }
             .clue-box.active { display: block; }
             #overlay {
@@ -148,7 +157,7 @@
         <div class="left-column">
             <div id="grid"></div>
             <div class="input-area">
-                <input type="text" id="mainInput" placeholder="點擊格子後輸入">
+                <input type="text" id="mainInput" placeholder="點擊格子後在此輸入">
                 <button class="btn-check" onclick="checkAnswers()">檢查</button>
                 <button class="btn-hint" onclick="revealHint()">💡 <span id="hintCount">5</span></button>
                 <button class="btn-clear-one" onclick="clearCurrentCell()">🗑️</button>
@@ -173,13 +182,12 @@
 <script>
     const urlParams = new URLSearchParams(window.location.search);
     const issueId = urlParams.get('issue') || '001';
-    let solutions = {}, labels = {}, size = 10, currentCell = null, titleClickCount = 0;
-    let hintsRemaining = 5, gameFinished = false, startTime = Date.now();
+    let solutions = {}, labels = {}, size = 10, currentCell = null;
+    let hintsRemaining = 5;
 
     const floatingContainer = document.getElementById('floating-input-container');
     const hiddenInput = document.getElementById('hidden-input');
 
-    // 處理全域點擊（關閉氣泡與提示區）
     function handleGlobalClick(e) {
         if (window.innerWidth <= 1000) {
             const box = document.getElementById('clueBox');
@@ -187,7 +195,6 @@
                 toggleClues();
             }
         }
-        // 點擊非格子區隱藏懸浮框
         if (!e.target.classList.contains('white-cell') && e.target !== hiddenInput) {
             floatingContainer.style.display = 'none';
         }
@@ -195,14 +202,13 @@
 
     function toggleClues(e) {
         if(e) e.stopPropagation();
-        if(window.innerWidth > 1000) return;
         const box = document.getElementById('clueBox');
         const overlay = document.getElementById('overlay');
         box.classList.toggle('active');
         overlay.classList.toggle('active');
     }
 
-    fetch(`./puzzles/001-010/${issueId}.json`) // 注意：此處路徑需根據你的結構動態調整
+    fetch(`./puzzles/001-010/${issueId}.json`)
     .then(res => res.text())
     .then(encodedData => {
         const reversedData = encodedData.trim().split("").reverse().join("");
@@ -258,7 +264,6 @@
         targetCell.classList.add('selected');
 
         if (window.innerWidth <= 1000) {
-            // 手機版：移動懸浮氣泡
             const rect = targetCell.getBoundingClientRect();
             floatingContainer.style.display = 'block';
             floatingContainer.style.left = `${rect.left + (rect.width / 2) - 25}px`;
@@ -266,14 +271,12 @@
             hiddenInput.value = "";
             hiddenInput.focus();
         } else {
-            // 電腦版：使用原本 Input
             const input = document.getElementById('mainInput');
             input.value = "";
             input.focus();
         }
     }
 
-    // 統一填字邏輯
     function fillChar(val) {
         if (!currentCell || !val) return;
         const lastChar = val.trim().slice(-1);
@@ -301,7 +304,7 @@
             if (userAns !== "") filled++;
             if (userAns !== solutions[key]) allCorrect = false;
         }
-        alert(allCorrect ? "恭喜通關！" : `加油！已填寫 ${filled} 格`);
+        alert(allCorrect ? "帥喔，快搞定了！" : `加油！已填寫 ${filled} 格`);
     }
 
     function revealHint() {
@@ -320,7 +323,7 @@
             div.innerHTML = `<span style="font-weight:bold; color:var(--primary); margin-right:8px;">${clue.num}</span>${clue.text}`;
             div.onclick = () => {
                 for (let key in labels) {
-                    if (labels[key].includes(String(clue.num))) {
+                    if (labels[key] === String(clue.num)) {
                         const [r, c] = key.split(",").map(Number);
                         selectCell(r, c);
                         if(window.innerWidth <= 1000) toggleClues();
@@ -333,7 +336,7 @@
     }
 
     function clearCurrentCell() { if (currentCell) document.getElementById(`text-${currentCell.r}-${currentCell.c}`).innerText = ""; }
-    function handleTitleClick() { /* 快速填滿邏輯... */ }
+    function handleTitleClick() { /* 快速填滿邏輯僅限測試使用 */ }
 </script>
 </body>
 </html>
