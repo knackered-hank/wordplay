@@ -14,30 +14,92 @@
             margin: 0;
             min-height: 100vh;
         }
-        h1 { color: #3d405b; margin: 20px 0; cursor: default; user-select: none; }
-        .game-wrapper { display: flex; gap: 40px; align-items: flex-start; justify-content: center; flex-wrap: wrap; max-width: 1200px; flex: 1; }
-        .left-column { display: flex; flex-direction: column; align-items: center; gap: 20px; }
-        #grid { display: grid; border: 4px solid #333; background-color: #333; box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
-        .cell { width: 48px; height: 48px; position: relative; box-sizing: border-box; background-color: #333; }
+        h1 { color: #3d405b; margin: 20px 0; cursor: default; user-select: none; font-size: 32px; }
+        
+        /* 放大整體容器 */
+        .game-wrapper { 
+            display: flex; 
+            gap: 30px; 
+            align-items: flex-start; 
+            justify-content: center; 
+            flex-wrap: nowrap; /* 強制不換列 */
+            max-width: 1400px; 
+            width: 95%;
+            flex: 1; 
+        }
+
+        .left-column { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 20px; 
+            flex: 0 0 auto; /* 固定左側寬度隨內容撐開 */
+        }
+
+        /* 放大正方形題目格，格調大一點 */
+        #grid { 
+            display: grid; 
+            border: 5px solid #333; 
+            background-color: #333; 
+            box-shadow: 0 12px 24px rgba(0,0,0,0.2); 
+        }
+        .cell { width: 55px; height: 55px; position: relative; box-sizing: border-box; background-color: #333; }
         .white-cell { background-color: white; border: 1px solid #ccc; cursor: pointer; }
         .selected { background-color: #f2cc8f !important; box-shadow: inset 0 0 0 4px #e07a5f; z-index: 5; }
         .wrong-flash { background-color: #f8d7da !important; box-shadow: inset 0 0 0 4px #dc3545 !important; }
-        .cell-text { color: #2d6a4f; pointer-events: none; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; }
-        .num-label { position: absolute; top: 1px; left: 2px; font-size: 10px; color: #666; font-weight: bold; pointer-events: none; }
-        .input-area { width: 500px; background: #fff; padding: 12px 10px; border-radius: 10px; display: flex; gap: 10px; border: 2px solid #3d405b; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        #mainInput { flex: 1; font-size: 18px; padding: 8px; text-align: center; border: 1px solid #ccc; border-radius: 5px; outline: none; }
-        button { padding: 8px 15px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; color: white; }
-        .btn-check { background: #2d6a4f; }
-        .btn-hint { background: #f4d35e; color: #3d405b; border: 1px solid #d1b44c; }
+        .cell-text { color: #2d6a4f; pointer-events: none; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; }
+        .num-label { position: absolute; top: 2px; left: 4px; font-size: 11px; color: #666; font-weight: bold; pointer-events: none; }
+
+        /* 延伸輸入區域，與題目格等寬或更長 */
+        .input-area { 
+            width: 100%; /* 隨左側欄位撐開 */
+            min-width: 580px; 
+            background: #fff; 
+            padding: 15px; 
+            border-radius: 12px; 
+            display: flex; 
+            gap: 12px; 
+            border: 2px solid #3d405b; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+            box-sizing: border-box;
+        }
+        #mainInput { 
+            flex: 1; 
+            font-size: 20px; 
+            padding: 10px; 
+            text-align: center; 
+            border: 1px solid #ccc; 
+            border-radius: 6px; 
+            outline: none; 
+        }
+
+        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold; color: white; font-size: 16px; white-space: nowrap; transition: 0.2s; }
+        .btn-check { background: #2d6a4f; flex: 0 0 auto; }
+        .btn-hint { background: #f4d35e; color: #3d405b; border: 1px solid #d1b44c; flex: 0 0 auto; }
         .btn-hint:disabled { background: #e9ecef; color: #adb5bd; border-color: #dee2e6; cursor: not-allowed; }
-        .btn-clear-one { background: #ffffff; color: #3d405b; border: 1px solid #ccc; }
-        .btn-reset { background: #e07a5f; }
-        .clue-box { width: 380px; background: white; padding: 25px; border-radius: 12px; height: 520px; overflow-y: auto; border-top: 5px solid #e07a5f; }
-        .clue-item { margin-bottom: 12px; font-size: 15px; cursor: pointer; padding: 4px; border-radius: 4px; }
+        .btn-clear-one { background: #ffffff; color: #3d405b; border: 1px solid #ccc; flex: 0 0 auto; }
+        .btn-reset { background: #e07a5f; flex: 0 0 auto; }
+        button:hover { filter: brightness(0.9); }
+
+        /* 右側提示區同步拉長與調整 */
+        .clue-box { 
+            flex: 1; /* 自動佔據剩餘空間 */
+            min-width: 350px;
+            max-width: 500px;
+            background: white; 
+            padding: 30px; 
+            border-radius: 15px; 
+            height: 600px; /* 配合變大的題目格增加高度 */
+            overflow-y: auto; 
+            border-top: 6px solid #e07a5f; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .clue-item { margin-bottom: 15px; font-size: 17px; cursor: pointer; padding: 6px; border-radius: 6px; line-height: 1.5; }
         .clue-item:hover { color: #e07a5f; background-color: #fdf0d5; }
-        .clue-num { font-weight: bold; color: #e07a5f; margin-right: 8px; }
-        .back-link { margin-top: 20px; text-decoration: none; color: #3d405b; font-size: 14px; font-weight: bold; }
-        footer { margin-top: 50px; font-size: 12px; color: #888; text-align: center; }
+        .clue-num { font-weight: bold; color: #e07a5f; margin-right: 10px; font-size: 18px; }
+        
+        .back-link { margin-top: 20px; text-decoration: none; color: #3d405b; font-size: 16px; font-weight: bold; }
+        footer { margin-top: 50px; font-size: 14px; color: #888; text-align: center; padding-bottom: 30px; }
     </style>
 </head>
 <body>
@@ -57,9 +119,9 @@
             <a href="index.html" class="back-link">← 返回選單</a>
         </div>
         <div class="clue-box">
-            <h3 style="color:#3d405b; border-bottom: 1px solid #eee;">橫行提示</h3>
+            <h3 style="color:#3d405b; border-bottom: 2px solid #f4f1de; padding-bottom: 10px;">橫行提示</h3>
             <div id="across-clues"></div>
-            <h3 style="color:#3d405b; border-bottom: 1px solid #eee; margin-top:20px;">直行提示</h3>
+            <h3 style="color:#3d405b; border-bottom: 2px solid #f4f1de; padding-bottom: 10px; margin-top:30px;">直行提示</h3>
             <div id="down-clues"></div>
         </div>
     </div>
@@ -108,7 +170,7 @@
 
     function initGrid() {
         const grid = document.getElementById('grid');
-        grid.style.gridTemplateColumns = `repeat(${size}, 48px)`;
+        grid.style.gridTemplateColumns = `repeat(${size}, 55px)`;
         grid.innerHTML = "";
         for (let r = 1; r <= size; r++) {
             for (let c = 1; c <= size; c++) {
