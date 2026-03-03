@@ -8,10 +8,8 @@
         :root { --bg-color: #fdfaf0; --primary: #e07a5f; --grid-bg: #333; }
         body { font-family: "Microsoft JhengHei", sans-serif; background-color: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding: 20px; }
         
-        /* 選單頁面樣式 */
         .menu-container { max-width: 800px; width: 100%; text-align: center; margin-top: 50px; }
         
-        /* 網格容器 */
         .level-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -19,7 +17,6 @@
             margin-top: 30px;
         }
 
-        /* 關卡卡片 */
         .level-card { 
             background: white; 
             padding: 25px 10px; 
@@ -38,7 +35,7 @@
         .level-card:hover { transform: translateY(-3px); border: 1px solid var(--primary); }
         .level-card h2 { margin: 0; color: #3d405b; font-size: 1.2rem; }
 
-        /* 手機版適應 */
+        /* 手機版 */
         @media (max-width: 600px) {
             .level-grid { grid-template-columns: repeat(3, 1fr); }
         }
@@ -48,7 +45,7 @@
 
     <div class="menu-container">
         <h1>韓哥填字遊戲</h1>
-        <p>請選擇想挑戰的關卡：</p>
+        <p>請選擇挑戰關卡：</p>
         <hr>
         <div id="levelGrid" class="level-grid"></div>
     </div>
@@ -56,31 +53,26 @@
     <div style="margin-top: 80px; font-size: 12px; color: #888; text-align: center;">◎2026 韓哥填字遊戲</div>
 
 <script>
-    // 1. 設定目前總共有幾關 (以後只要改這個數字)
     const totalLevels = 11; 
 
-    // 2. 高效率數字轉中文邏輯 (支援 1-99)
     function toChinese(n) {
         const units = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
         if (n === 10) return "十";
         if (n < 10) return units[n];
         
-        const tens = Math.floor(n / 10); // 十位數
-        const digit = n % 10;           // 個位數
+        const tens = Math.floor(n / 10); 
+        const digit = n % 10;   
         
         let result = "";
-        // 處理十位：11~19 顯示「十」，21~99 顯示「二十~九十」
         result += (tens === 1) ? "十" : units[tens] + "十";
-        // 處理個位
         result += units[digit];
         
         return result;
     }
 
-    // 3. 渲染網格
     const grid = document.getElementById('levelGrid');
     for (let i = 1; i <= totalLevels; i++) {
-        const issueId = String(i).padStart(3, '0'); // 補零成 001, 011...
+        const issueId = String(i).padStart(3, '0'); 
         
         const card = document.createElement('a');
         card.href = `gameset.html?issue=${issueId}`;
