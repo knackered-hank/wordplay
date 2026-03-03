@@ -7,74 +7,56 @@
     <style>
         :root { --bg-color: #f4f1de; --primary: #e07a5f; --secondary: #3d405b; --green: #2d6a4f; }
         
+        /* 1. 基礎設定：強制禁止左右溢出，並讓背景填滿 */
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+        }
+
         body {
             font-family: "Microsoft JhengHei", sans-serif;
-            background-color: var(--bg-color);
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 10px;
-            margin: 0;
-            min-height: 100vh;
             box-sizing: border-box;
-            overflow-x: hidden; /* 徹底禁止左右滑動 */
         }
 
-        /* 懸浮輸入氣泡 */
-        #floating-input-container {
-            position: absolute;
-            display: none;
-            z-index: 2000;
-        }
+        /* 2. 懸浮輸入氣泡 (維持原邏輯) */
+        #floating-input-container { position: absolute; display: none; z-index: 3000; }
         #hidden-input {
-            width: 50px;
-            height: 50px;
-            font-size: 24px;
-            text-align: center;
-            border: 3px solid var(--primary);
-            border-radius: 8px;
-            background: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            outline: none;
+            width: 50px; height: 50px; font-size: 24px; text-align: center;
+            border: 3px solid var(--primary); border-radius: 8px;
+            background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.3); outline: none;
         }
 
+        /* 3. 標題區：使用 vw 讓它在不同手機上比例一致 */
         .header-area {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            max-width: 1100px;
-            position: relative;
-            margin: 15px 0;
+            display: flex; justify-content: center; align-items: center;
+            width: 100%; max-width: 1100px; position: relative;
+            padding: 20px 0;
         }
-
-        h1 { color: var(--secondary); margin: 0; font-size: 28px; font-weight: 900; }
+        h1 { color: var(--secondary); margin: 0; font-size: 1.8rem; font-weight: 900; }
         #clue-trigger { display: none; }
 
-        /* 電腦版佈局 */
+        /* 4. 電腦與手機共用容器 */
         .game-wrapper { 
-            display: flex; 
-            flex-direction: row; 
-            gap: 25px; 
-            align-items: flex-start; 
-            justify-content: center; 
-            width: 95%; 
-            max-width: 1100px;
+            display: flex; flex-direction: row; gap: 30px;
+            align-items: flex-start; justify-content: center;
+            width: 95%; max-width: 1150px; margin: 0 auto;
         }
 
         .left-column { 
-            flex: 0 0 auto;
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
+            flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0;
         }
 
+        /* 5. 棋盤設定：加入縮放安全區 */
         #grid { 
-            display: grid; 
-            border: 8px solid #333; 
-            background-color: #333; 
-            padding: 2px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            display: grid; border: 8px solid #333; background-color: #333; padding: 2px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
         }
         .cell { width: 55px; height: 55px; position: relative; box-sizing: border-box; background-color: #333; }
         .white-cell { background-color: white; border: 1px solid #ccc; cursor: pointer; }
@@ -82,68 +64,66 @@
         .cell-text { color: var(--green); pointer-events: none; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; }
         .num-label { position: absolute; top: 2px; left: 4px; font-size: 11px; color: #666; font-weight: bold; }
 
+        /* 6. 輸入與按鈕區 */
         .input-area { 
-            width: 100%; max-width: 580px; background: #fff; padding: 12px; 
+            width: 100%; max-width: 600px; background: #fff; padding: 15px; 
             border-radius: 12px; display: flex; gap: 10px; border: 2px solid var(--secondary); 
-            margin-top: 20px; box-sizing: border-box;
+            margin: 25px 0; box-sizing: border-box;
         }
         #mainInput { flex: 1; font-size: 18px; padding: 10px; text-align: center; border: 1px solid #ccc; border-radius: 6px; outline: none; }
 
-        button { padding: 10px 15px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold; color: white; }
+        button { padding: 10px 18px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold; color: white; transition: 0.2s; }
         .btn-check { background: var(--green); }
         .btn-hint { background: #f4d35e; color: var(--secondary); }
         .btn-clear-one { background: #ffffff; color: var(--secondary); border: 1px solid #ccc; }
         .btn-reset { background: var(--primary); }
 
-        /* 提示盒樣式 */
+        /* 7. 提示盒 (Modal 模式) */
         .clue-box { 
-            flex: 0 1 380px; 
-            background: white; padding: 25px; border-radius: 15px; 
+            flex: 0 1 400px; background: white; padding: 25px; border-radius: 15px; 
             max-height: 80vh; overflow-y: auto; border-top: 6px solid var(--primary); 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            box-sizing: border-box;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); box-sizing: border-box;
         }
 
-        .back-link { margin-top: 15px; text-decoration: none; color: var(--secondary); font-weight: bold; }
-        footer { margin: 20px 0; font-size: 12px; color: #888; }
+        .back-link { text-decoration: none; color: var(--secondary); font-weight: bold; margin-bottom: 20px; }
+        footer { padding-bottom: 30px; font-size: 12px; color: #888; }
 
-        /* --- 手機版極致優化 (1000px 以下) --- */
+        /* --- 手機版 RWD 修正 (針對截圖問題) --- */
         @media (max-width: 1000px) {
-            body { padding: 5px; }
             #clue-trigger { 
-                display: block; position: absolute; right: 10px; 
-                background: var(--secondary); color: white; padding: 6px 14px; 
-                border-radius: 20px; font-size: 13px; font-weight: bold;
+                display: block; position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+                background: var(--secondary); color: white; padding: 8px 16px; 
+                border-radius: 25px; font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             }
-            .game-wrapper { flex-direction: column; align-items: center; gap: 0; width: 100%; }
-            h1 { font-size: 24px; width: 100%; text-align: center; }
-
-            /* 棋盤縮放控制 */
-            #grid { transform: scale(0.85); transform-origin: top center; margin-bottom: -60px; }
-
-            #mainInput { display: none; }
-            .input-area { width: 95vw; margin-top: 10px; justify-content: center; gap: 5px; padding: 8px; }
-            .input-area button { padding: 8px 10px; font-size: 14px; }
+            .game-wrapper { flex-direction: column; width: 100%; padding: 0 10px; box-sizing: border-box; }
             
-            /* 強制提示區全螢幕化且不撐開佈局 */
-            .clue-box {
-                display: none; position: fixed; top: 50% !important; left: 50% !important;
-                transform: translate(-50%, -50%) !important; 
-                width: 90vw !important; height: 70vh !important; 
-                z-index: 2001; flex: none; margin: 0;
+            /* 解決棋盤被切掉：使用動態縮放並確保寬度不溢出 */
+            #grid { 
+                transform: scale(min(0.85, 88vw / 570px)); /* 根據寬度自動計算縮放 */
+                transform-origin: top center; 
+                margin-bottom: -10%; /* 補償縮放後的空白 */
             }
-            .clue-box.active { display: block; }
+
+            #mainInput { display: none; } /* 手機版使用懸浮輸入 */
+            .input-area { width: 92vw; margin: 10px auto; }
+            
+            /* 提示區修正：固定位置，解決偏移 */
+            .clue-box {
+                display: none; position: fixed; top: 50%; left: 50%;
+                transform: translate(-50%, -50%); width: 90vw; height: 75vh; 
+                z-index: 2501; margin: 0;
+            }
+            .clue-box.active { display: block; animation: fadeIn 0.3s ease; }
+            
             #overlay {
                 display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: rgba(0,0,0,0.7); z-index: 2000;
+                background: rgba(0,0,0,0.7); z-index: 2500;
             }
             #overlay.active { display: block; }
             #close-x { display: block !important; }
         }
 
-        @media (max-width: 400px) {
-            #grid { transform: scale(0.7); margin-bottom: -110px; }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translate(-50%, -48%); } to { opacity: 1; transform: translate(-50%, -50%); } }
     </style>
 </head>
 <body onclick="handleGlobalClick(event)">
@@ -153,7 +133,7 @@
     </div>
 
     <div class="header-area">
-        <h1 id="game-title" onclick="handleTitleClick()">載入中...</h1>
+        <h1 id="game-title">載入中...</h1>
         <div id="clue-trigger" onclick="toggleClues(event)">🔍 提示區</div>
     </div>
 
@@ -175,12 +155,12 @@
 
         <div class="clue-box" id="clueBox">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h2 style="color:var(--secondary); margin:0; font-size: 20px;">題目提示</h2>
-                <span id="close-x" style="display:none; cursor:pointer; font-size:28px; color:#999; padding: 5px;" onclick="toggleClues(event)">✕</span>
+                <h2 style="color:var(--secondary); margin:0;">題目提示</h2>
+                <span id="close-x" style="display:none; cursor:pointer; font-size:32px; color:#999;" onclick="toggleClues(event)">✕</span>
             </div>
-            <h3 style="color:var(--primary); border-bottom: 2px solid #eee; padding-bottom: 5px; font-size: 18px;">橫行提示</h3>
+            <h3 style="color:var(--primary); border-bottom: 2px solid #eee; padding-bottom: 5px;">橫行提示</h3>
             <div id="across-clues"></div>
-            <h3 style="color:var(--primary); border-bottom: 2px solid #eee; padding-bottom: 5px; margin-top:20px; font-size: 18px;">直行提示</h3>
+            <h3 style="color:var(--primary); border-bottom: 2px solid #eee; padding-bottom: 5px; margin-top:20px;">直行提示</h3>
             <div id="down-clues"></div>
         </div>
     </div>
@@ -195,7 +175,6 @@
     const hiddenInput = document.getElementById('hidden-input');
 
     function handleGlobalClick(e) {
-        // 如果懸浮氣泡開啟中，點擊非格子區則關閉
         if (!e.target.classList.contains('white-cell') && e.target !== hiddenInput) {
             floatingContainer.style.display = 'none';
         }
@@ -205,18 +184,12 @@
         if(e) e.stopPropagation();
         const box = document.getElementById('clueBox');
         const overlay = document.getElementById('overlay');
-        box.classList.toggle('active');
+        const isActive = box.classList.toggle('active');
         overlay.classList.toggle('active');
-        
-        // 開啟提示時禁止背景捲動
-        if (box.classList.contains('active')) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'auto';
-        }
+        document.body.style.overflow = isActive ? 'hidden' : 'auto';
     }
 
-    // 載入 JSON 資料
+    // 載入 JSON (保留原本的解密邏輯)
     fetch(`./puzzles/001-010/${issueId}.json`)
     .then(res => res.text())
     .then(encodedData => {
@@ -272,11 +245,11 @@
         const targetCell = document.getElementById(`cell-${r}-${c}`);
         targetCell.classList.add('selected');
 
+        const rect = targetCell.getBoundingClientRect();
         if (window.innerWidth <= 1000) {
-            const rect = targetCell.getBoundingClientRect();
             floatingContainer.style.display = 'block';
             floatingContainer.style.left = `${rect.left + (rect.width / 2) - 25}px`;
-            floatingContainer.style.top = `${rect.top + window.scrollY - 60}px`;
+            floatingContainer.style.top = `${rect.top + window.scrollY - 65}px`;
             hiddenInput.value = "";
             hiddenInput.focus();
         } else {
@@ -294,10 +267,9 @@
         }
     }
 
-    hiddenInput.addEventListener('input', (e) => {
+    hiddenInput.addEventListener('input', () => {
         fillChar(hiddenInput.value);
         if (hiddenInput.value) {
-            // 輸入後延遲關閉氣泡，提升流暢感
             setTimeout(() => { floatingContainer.style.display = 'none'; }, 300);
         }
     });
@@ -329,7 +301,7 @@
         const container = document.getElementById(id);
         clues.forEach(clue => {
             const div = document.createElement("div");
-            div.style.cssText = "margin-bottom:12px; font-size:15px; cursor:pointer; line-height:1.4;";
+            div.style.cssText = "margin-bottom:12px; font-size:16px; cursor:pointer; line-height:1.4;";
             div.innerHTML = `<span style="font-weight:bold; color:var(--primary); margin-right:8px;">${clue.num}</span>${clue.text}`;
             div.onclick = () => {
                 for (let key in labels) {
@@ -346,7 +318,6 @@
     }
 
     function clearCurrentCell() { if (currentCell) document.getElementById(`text-${currentCell.r}-${currentCell.c}`).innerText = ""; }
-    function handleTitleClick() { /* 快速填滿邏輯僅限測試使用 */ }
 </script>
 </body>
 </html>
