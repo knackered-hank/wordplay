@@ -22,10 +22,8 @@
             background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.3); outline: none;
         }
 
-        /* 錯誤紅燈效果 */
         .error-flash { background-color: #ffb3b3 !important; transition: background-color 0.2s; }
 
-        /* 自定義彈窗樣式 (取代 Alert) */
         #custom-modal {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
@@ -33,7 +31,7 @@
         }
         #custom-modal h2 { margin-top: 0; color: var(--secondary); font-size: 1.2rem; }
         #custom-modal p { font-size: 1.1rem; color: #444; margin: 15px 0; }
-        #custom-modal button { background: var(--secondary); width: 100%; padding: 10px; font-size: 1rem; }
+        #custom-modal button { background: var(--secondary); width: 100%; padding: 10px; font-size: 1rem; color: white; border: none; border-radius: 6px; cursor: pointer; }
 
         .header-area {
             display: flex; justify-content: center; align-items: center;
@@ -127,7 +125,7 @@
         <div class="left-column">
             <div id="grid"></div>
             <div class="input-area">
-                <input type="text" id="mainInput" placeholder="輸入...">
+                <input type="text" id="mainInput" placeholder="在此輸入答案">
                 <button class="btn-check" onclick="checkAnswers()">檢查</button>
                 <button class="btn-hint" onclick="revealHint()">💡 <span id="hintCount">5</span></button>
                 <button class="btn-clear-one" onclick="clearCurrentCell()">🗑️</button>
@@ -159,6 +157,35 @@
     const floatingContainer = document.getElementById('floating-input-container');
     const hiddenInput = document.getElementById('hidden-input');
 
+    // 方向鍵移動邏輯 (支援跳過黑格)
+    function moveSelection(dr, dc) {
+        if (!currentCell) return;
+        let r = currentCell.r + dr;
+        let c = currentCell.c + dc;
+        
+        while (r >= 1 && r <= size && c >= 1 && c <= size) {
+            if (solutions[`${r},${c}`]) {
+                selectCell(r, c);
+                return;
+            }
+            r += dr;
+            c += dc;
+        }
+    }
+
+    // 監聽鍵盤事件
+    document.addEventListener('keydown', (e) => {
+        if (!currentCell) return;
+        // 如果正在顯示彈窗或提示區，不觸發移動
+        if (document.getElementById('custom-modal').style.display === 'block') return;
+        if (document.getElementById('clueBox').classList.contains('active')) return;
+
+        if (e.key === "ArrowUp") { e.preventDefault(); moveSelection(-1, 0); }
+        if (e.key === "ArrowDown") { e.preventDefault(); moveSelection(1, 0); }
+        if (e.key === "ArrowLeft") { e.preventDefault(); moveSelection(0, -1); }
+        if (e.key === "ArrowRight") { e.preventDefault(); moveSelection(0, 1); }
+    });
+
     function titleClick() {
         clickCount++;
         clearTimeout(clickTimer);
@@ -181,7 +208,7 @@
     }
 
     function handleGlobalClick(e) {
-        if (!e.target.classList.contains('white-cell') && e.target !== hiddenInput) {
+        if (!e.target.classList.contains('white-cell') && e.target !== hiddenInput && e.target !== document.getElementById('mainInput')) {
             floatingContainer.style.display = 'none';
         }
     }
@@ -267,7 +294,13 @@
     function fillChar(val) {
         if (!currentCell || !val) return;
         const lastChar = val.trim().slice(-1);
-        if (lastChar) document.getElementById(`text-${currentCell.r}-${currentCell.c}`).innerText = lastChar;
+        if (lastChar) {
+            document.getElementById(`text-${currentCell.r}-${currentCell.c}`).innerText = lastChar;
+            // 重要修正：確定輸入字元後，延遲 100ms 自動向右移動，避開 IME 選字干擾
+            setTimeout(() => {
+                moveSelection(0, 1);
+            }, 100);
+        }
     }
 
     hiddenInput.addEventListener('input', () => {
@@ -280,7 +313,6 @@
         e.target.value = "";
     });
 
-    // 核心修正：檢查答案邏輯
     function checkAnswers() {
         let correctCount = 0;
         const totalCells = Object.keys(solutions).length;
@@ -295,13 +327,11 @@
             if (userAns === solutions[key]) {
                 correctCount++;
             } else if (userAns !== "") {
-                // 亮紅燈 1.75 秒
                 cellEl.classList.add('error-flash');
                 setTimeout(() => { cellEl.classList.remove('error-flash'); }, 1750);
             }
         }
 
-        // 彈窗內容判斷
         const modal = document.getElementById('custom-modal');
         const overlay = document.getElementById('overlay');
         const prog = document.getElementById('modal-progress');
