@@ -11,8 +11,10 @@
         body { font-family: "Microsoft JhengHei", sans-serif; display: flex; flex-direction: column; align-items: center; }
 
         h1 { 
-            color: var(--secondary); margin: 0; font-size: 1.8rem; font-weight: 900; cursor: pointer; 
-            user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+            color: var(--secondary); margin: 0; font-size: 1.8rem; font-weight: 900; 
+            cursor: default; /* 改回預設鼠標 */
+            user-select: auto; /* 恢復一般文字選取感 */
+            -webkit-tap-highlight-color: transparent;
         }
 
         #floating-input-container { position: absolute; display: none; z-index: 3000; }
@@ -157,7 +159,7 @@
     const floatingContainer = document.getElementById('floating-input-container');
     const hiddenInput = document.getElementById('hidden-input');
 
-    // 方向鍵移動邏輯 (支援跳過黑格)
+    // 方向鍵移動邏輯 (保留手動移動)
     function moveSelection(dr, dc) {
         if (!currentCell) return;
         let r = currentCell.r + dr;
@@ -173,10 +175,8 @@
         }
     }
 
-    // 監聽鍵盤事件
     document.addEventListener('keydown', (e) => {
         if (!currentCell) return;
-        // 如果正在顯示彈窗或提示區，不觸發移動
         if (document.getElementById('custom-modal').style.display === 'block') return;
         if (document.getElementById('clueBox').classList.contains('active')) return;
 
@@ -296,10 +296,7 @@
         const lastChar = val.trim().slice(-1);
         if (lastChar) {
             document.getElementById(`text-${currentCell.r}-${currentCell.c}`).innerText = lastChar;
-            // 重要修正：確定輸入字元後，延遲 100ms 自動向右移動，避開 IME 選字干擾
-            setTimeout(() => {
-                moveSelection(0, 1);
-            }, 100);
+            // 移除原本的 moveSelection(0, 1) 自動跳格，現在填完後會留在原地
         }
     }
 
