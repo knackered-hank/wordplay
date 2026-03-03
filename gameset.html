@@ -13,10 +13,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 15px;
+            padding: 10px;
             margin: 0;
             min-height: 100vh;
             box-sizing: border-box;
+            overflow-x: hidden; /* 徹底禁止左右滑動 */
         }
 
         /* 懸浮輸入氣泡 */
@@ -44,25 +45,25 @@
             width: 100%;
             max-width: 1100px;
             position: relative;
-            margin: 20px 0;
+            margin: 15px 0;
         }
 
-        h1 { color: var(--secondary); margin: 0; font-size: 32px; font-weight: 900; }
+        h1 { color: var(--secondary); margin: 0; font-size: 28px; font-weight: 900; }
         #clue-trigger { display: none; }
 
-        /* --- 電腦版核心佈局修正 --- */
+        /* 電腦版佈局 */
         .game-wrapper { 
             display: flex; 
             flex-direction: row; 
-            gap: 25px; /* 縮減棋盤與提示的間距 */
+            gap: 25px; 
             align-items: flex-start; 
             justify-content: center; 
             width: 95%; 
-            max-width: 1100px; /* 縮小最大寬度，讓整體更緊湊 */
+            max-width: 1100px;
         }
 
         .left-column { 
-            flex: 0 0 auto; /* 固定左側寬度，不隨意伸展 */
+            flex: 0 0 auto;
             display: flex; 
             flex-direction: column; 
             align-items: center; 
@@ -94,11 +95,11 @@
         .btn-clear-one { background: #ffffff; color: var(--secondary); border: 1px solid #ccc; }
         .btn-reset { background: var(--primary); }
 
-        /* 提示盒寬度調整 */
+        /* 提示盒樣式 */
         .clue-box { 
-            flex: 0 1 380px; /* 寬度微調，適配 1100px 的容器 */
+            flex: 0 1 380px; 
             background: white; padding: 25px; border-radius: 15px; 
-            max-height: 75vh; overflow-y: auto; border-top: 6px solid var(--primary); 
+            max-height: 80vh; overflow-y: auto; border-top: 6px solid var(--primary); 
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             box-sizing: border-box;
         }
@@ -106,37 +107,42 @@
         .back-link { margin-top: 15px; text-decoration: none; color: var(--secondary); font-weight: bold; }
         footer { margin: 20px 0; font-size: 12px; color: #888; }
 
-        /* --- 手機版專用設定 (1000px 以下) --- */
+        /* --- 手機版極致優化 (1000px 以下) --- */
         @media (max-width: 1000px) {
+            body { padding: 5px; }
             #clue-trigger { 
-                display: block; position: absolute; right: 5px; 
-                background: var(--secondary); color: white; padding: 6px 12px; 
-                border-radius: 15px; font-size: 14px;
+                display: block; position: absolute; right: 10px; 
+                background: var(--secondary); color: white; padding: 6px 14px; 
+                border-radius: 20px; font-size: 13px; font-weight: bold;
             }
             .game-wrapper { flex-direction: column; align-items: center; gap: 0; width: 100%; }
-            h1 { font-size: 26px; }
+            h1 { font-size: 24px; width: 100%; text-align: center; }
 
-            #grid { transform: scale(0.8); transform-origin: top center; margin-bottom: -90px; }
+            /* 棋盤縮放控制 */
+            #grid { transform: scale(0.85); transform-origin: top center; margin-bottom: -60px; }
 
             #mainInput { display: none; }
-            .input-area { width: 92vw; margin-top: 10px; justify-content: center; }
+            .input-area { width: 95vw; margin-top: 10px; justify-content: center; gap: 5px; padding: 8px; }
+            .input-area button { padding: 8px 10px; font-size: 14px; }
             
+            /* 強制提示區全螢幕化且不撐開佈局 */
             .clue-box {
-                display: none; position: fixed; top: 50%; left: 50%;
-                transform: translate(-50%, -50%); width: 90vw; height: 75vh; z-index: 1001;
-                flex: none;
+                display: none; position: fixed; top: 50% !important; left: 50% !important;
+                transform: translate(-50%, -50%) !important; 
+                width: 90vw !important; height: 70vh !important; 
+                z-index: 2001; flex: none; margin: 0;
             }
             .clue-box.active { display: block; }
             #overlay {
                 display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                background: rgba(0,0,0,0.6); z-index: 1000;
+                background: rgba(0,0,0,0.7); z-index: 2000;
             }
             #overlay.active { display: block; }
             #close-x { display: block !important; }
         }
 
         @media (max-width: 400px) {
-            #grid { transform: scale(0.65); margin-bottom: -130px; }
+            #grid { transform: scale(0.7); margin-bottom: -110px; }
         }
     </style>
 </head>
@@ -151,7 +157,7 @@
         <div id="clue-trigger" onclick="toggleClues(event)">🔍 提示區</div>
     </div>
 
-    <div id="overlay"></div>
+    <div id="overlay" onclick="toggleClues(event)"></div>
 
     <div class="game-wrapper">
         <div class="left-column">
@@ -169,12 +175,12 @@
 
         <div class="clue-box" id="clueBox">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h2 style="color:var(--secondary); margin:0;">題目提示</h2>
-                <span id="close-x" style="display:none; cursor:pointer; font-size:24px; color:#999;" onclick="toggleClues(event)">✕</span>
+                <h2 style="color:var(--secondary); margin:0; font-size: 20px;">題目提示</h2>
+                <span id="close-x" style="display:none; cursor:pointer; font-size:28px; color:#999; padding: 5px;" onclick="toggleClues(event)">✕</span>
             </div>
-            <h3 style="color:var(--primary); border-bottom: 2px solid #eee; padding-bottom: 5px;">橫行提示</h3>
+            <h3 style="color:var(--primary); border-bottom: 2px solid #eee; padding-bottom: 5px; font-size: 18px;">橫行提示</h3>
             <div id="across-clues"></div>
-            <h3 style="color:var(--primary); border-bottom: 2px solid #eee; padding-bottom: 5px; margin-top:20px;">直行提示</h3>
+            <h3 style="color:var(--primary); border-bottom: 2px solid #eee; padding-bottom: 5px; margin-top:20px; font-size: 18px;">直行提示</h3>
             <div id="down-clues"></div>
         </div>
     </div>
@@ -189,12 +195,7 @@
     const hiddenInput = document.getElementById('hidden-input');
 
     function handleGlobalClick(e) {
-        if (window.innerWidth <= 1000) {
-            const box = document.getElementById('clueBox');
-            if(box.classList.contains('active') && !box.contains(e.target) && e.target.id !== 'clue-trigger') {
-                toggleClues();
-            }
-        }
+        // 如果懸浮氣泡開啟中，點擊非格子區則關閉
         if (!e.target.classList.contains('white-cell') && e.target !== hiddenInput) {
             floatingContainer.style.display = 'none';
         }
@@ -206,8 +207,16 @@
         const overlay = document.getElementById('overlay');
         box.classList.toggle('active');
         overlay.classList.toggle('active');
+        
+        // 開啟提示時禁止背景捲動
+        if (box.classList.contains('active')) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
+        }
     }
 
+    // 載入 JSON 資料
     fetch(`./puzzles/001-010/${issueId}.json`)
     .then(res => res.text())
     .then(encodedData => {
@@ -288,7 +297,8 @@
     hiddenInput.addEventListener('input', (e) => {
         fillChar(hiddenInput.value);
         if (hiddenInput.value) {
-            setTimeout(() => { floatingContainer.style.display = 'none'; }, 400);
+            // 輸入後延遲關閉氣泡，提升流暢感
+            setTimeout(() => { floatingContainer.style.display = 'none'; }, 300);
         }
     });
 
@@ -319,7 +329,7 @@
         const container = document.getElementById(id);
         clues.forEach(clue => {
             const div = document.createElement("div");
-            div.style.cssText = "margin-bottom:12px; font-size:16px; cursor:pointer;";
+            div.style.cssText = "margin-bottom:12px; font-size:15px; cursor:pointer; line-height:1.4;";
             div.innerHTML = `<span style="font-weight:bold; color:var(--primary); margin-right:8px;">${clue.num}</span>${clue.text}`;
             div.onclick = () => {
                 for (let key in labels) {
