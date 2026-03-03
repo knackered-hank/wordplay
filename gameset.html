@@ -93,7 +93,7 @@
             #grid { 
                 transform: scale(0.8); 
                 transform-origin: top center; 
-                margin-top: 5px;      /* 調整題目盤與上方提示鈕的距離 */
+                margin-top: 15px;      /* 調整題目盤與上方提示鈕的距離 */
                 margin-bottom: -65px; /* 強力拉近下方輸入框，消除紅線間隙 */
             }
 
@@ -117,7 +117,7 @@
         }
 
         /* 針對小螢幕（如 iPhone SE）更激進的縮減 */
-        @media (max-width: 380px) {
+        @media (max-width: 400px) {
             h1 { font-size: 20px; }
             #grid { transform: scale(0.68); margin-bottom: -110px; }
             .back-link { font-size: 12px; }
