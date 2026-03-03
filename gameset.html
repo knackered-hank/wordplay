@@ -28,6 +28,8 @@
         #mainInput { flex: 1; font-size: 18px; padding: 8px; text-align: center; border: 1px solid #ccc; border-radius: 5px; outline: none; }
         button { padding: 8px 15px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; color: white; }
         .btn-check { background: #2d6a4f; }
+        .btn-hint { background: #f4d35e; color: #3d405b; border: 1px solid #d1b44c; }
+        .btn-hint:disabled { background: #e9ecef; color: #adb5bd; border-color: #dee2e6; cursor: not-allowed; }
         .btn-clear-one { background: #ffffff; color: #3d405b; border: 1px solid #ccc; }
         .btn-reset { background: #e07a5f; }
         .clue-box { width: 380px; background: white; padding: 25px; border-radius: 12px; height: 520px; overflow-y: auto; border-top: 5px solid #e07a5f; }
@@ -48,6 +50,7 @@
             <div class="input-area">
                 <input type="text" id="mainInput" placeholder="點擊格子後在此輸入" autocomplete="off">
                 <button class="btn-check" onclick="checkAnswers()">檢查答案</button>
+                <button class="btn-hint" id="hintBtn" onclick="revealHint()">💡 <span id="hintCount">5</span></button>
                 <button class="btn-clear-one" onclick="clearCurrentCell()">🗑️</button>
                 <button class="btn-reset" onclick="location.reload()">清空</button>
             </div>
@@ -70,6 +73,7 @@
     let isComposing = false; 
     let startTime = Date.now();
     let gameFinished = false;
+    let hintsRemaining = 5;
 
     const issueNum = parseInt(issueId);
     const startRange = Math.floor((issueNum - 1) / 10) * 10 + 1;
@@ -218,6 +222,26 @@
             let message = filledCount >= threshold ? "帥喔，快搞定了！" : "加油，再接再厲！";
             const errorNote = hasWrong ? "\n（裡面有填錯的字喔！）" : "";
             alert(`${message}\n目前進度：${filledCount} / ${totalCells}${errorNote}`);
+        }
+    }
+
+    function revealHint() {
+        if (!currentCell || gameFinished) return;
+        if (hintsRemaining <= 0) {
+            alert("提示次數已用完囉！");
+            return;
+        }
+        const key = `${currentCell.r},${currentCell.c}`;
+        const targetText = document.getElementById(`text-${currentCell.r}-${currentCell.c}`);
+        if (targetText.innerText === solutions[key]) {
+            alert("這格已經是正確答案囉！");
+            return;
+        }
+        targetText.innerText = solutions[key];
+        hintsRemaining--;
+        document.getElementById('hintCount').innerText = hintsRemaining;
+        if (hintsRemaining === 0) {
+            document.getElementById('hintBtn').disabled = true;
         }
     }
 
