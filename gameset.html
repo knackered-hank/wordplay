@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=no">
     <title id="page-title">韓哥填字遊戲</title>
     <style>
         :root { --bg-color: #f4f1de; --primary: #e07a5f; --secondary: #3d405b; --green: #2d6a4f; }
@@ -13,15 +13,28 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            padding: 10px;
             margin: 0;
             min-height: 100vh;
-            overflow-x: hidden; /* 防止左右滑動 */
+            overflow-x: hidden;
         }
 
-        h1 { color: var(--secondary); margin: 20px 0; cursor: default; user-select: none; font-size: 32px; text-align: center; }
-        
-        /* 遊戲主容器 */
+        h1 { color: var(--secondary); margin: 10px 0 5px 0; font-size: 28px; text-align: center; }
+
+        /* 新增：提示切換按鈕 (手機版顯示) */
+        #clue-trigger {
+            display: none;
+            background: var(--secondary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+
         .game-wrapper { 
             display: flex; 
             gap: 30px; 
@@ -36,7 +49,7 @@
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            gap: 20px; 
+            gap: 15px; 
             flex: 0 0 auto;
             max-width: 100%;
         }
@@ -46,7 +59,8 @@
             display: grid; 
             border: 5px solid #333; 
             background-color: #333; 
-            box-shadow: 0 12px 24px rgba(0,0,0,0.2); 
+            box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
         }
         .cell { width: 55px; height: 55px; position: relative; box-sizing: border-box; background-color: #333; }
         .white-cell { background-color: white; border: 1px solid #ccc; cursor: pointer; }
@@ -55,122 +69,119 @@
         .cell-text { color: var(--green); pointer-events: none; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; }
         .num-label { position: absolute; top: 2px; left: 4px; font-size: 11px; color: #666; font-weight: bold; pointer-events: none; }
 
-        /* 輸入區域：電腦版 */
+        /* 輸入區域 */
         .input-area { 
             width: 100%;
             min-width: 580px; 
             background: #fff; 
-            padding: 15px; 
+            padding: 12px; 
             border-radius: 12px; 
             display: flex; 
-            gap: 12px; 
+            gap: 10px; 
             border: 2px solid var(--secondary); 
             box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
             box-sizing: border-box;
         }
-        #mainInput { 
-            flex: 1; 
-            font-size: 20px; 
-            padding: 10px; 
-            text-align: center; 
-            border: 1px solid #ccc; 
-            border-radius: 6px; 
-            outline: none; 
-        }
+        #mainInput { flex: 1; font-size: 18px; padding: 10px; text-align: center; border: 1px solid #ccc; border-radius: 6px; outline: none; }
 
-        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold; color: white; font-size: 16px; white-space: nowrap; transition: 0.2s; }
+        button { padding: 10px 15px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold; color: white; white-space: nowrap; }
         .btn-check { background: var(--green); }
         .btn-hint { background: #f4d35e; color: var(--secondary); border: 1px solid #d1b44c; }
-        .btn-hint:disabled { background: #e9ecef; color: #adb5bd; border-color: #dee2e6; cursor: not-allowed; }
         .btn-clear-one { background: #ffffff; color: var(--secondary); border: 1px solid #ccc; }
         .btn-reset { background: var(--primary); }
-        button:hover { filter: brightness(0.9); }
 
-        /* 提示區域 */
+        /* 電腦版提示區 */
         .clue-box { 
             flex: 1; 
             min-width: 350px;
-            max-width: 500px;
+            max-width: 450px;
             background: white; 
-            padding: 30px; 
+            padding: 25px; 
             border-radius: 15px; 
             height: 600px; 
             overflow-y: auto; 
             border-top: 6px solid var(--primary); 
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
-        .clue-item { margin-bottom: 15px; font-size: 17px; cursor: pointer; padding: 6px; border-radius: 6px; line-height: 1.5; }
-        .clue-item:hover { color: var(--primary); background-color: #fdf0d5; }
+        .clue-item { margin-bottom: 12px; font-size: 16px; cursor: pointer; padding: 8px; border-radius: 6px; line-height: 1.4; border-bottom: 1px solid #eee; }
+        .clue-item:hover { background-color: #fdf0d5; }
         .clue-num { font-weight: bold; color: var(--primary); margin-right: 10px; font-size: 18px; }
         
-        .back-link { margin-top: 20px; text-decoration: none; color: var(--secondary); font-size: 16px; font-weight: bold; }
-        footer { margin-top: 50px; font-size: 14px; color: #888; text-align: center; padding-bottom: 30px; }
+        .back-link { margin-top: 15px; text-decoration: none; color: var(--secondary); font-size: 15px; font-weight: bold; }
+        footer { margin-top: 30px; font-size: 12px; color: #888; text-align: center; padding-bottom: 20px; }
 
-        /* --- 手機版自適應修正 --- */
+        /* --- 手機版彈窗式提示介面 --- */
         @media (max-width: 900px) {
-            .game-wrapper {
-                flex-direction: column;
-                align-items: center;
-                gap: 40px;
-            }
+            #clue-trigger { display: block; } /* 顯示按鈕 */
+            
+            .game-wrapper { flex-direction: column; align-items: center; }
+            
+            #grid { transform: scale(0.85); margin-bottom: -20px; }
 
-            /* 根據寬度自動縮小網格 */
-            #grid {
-                transform: scale(0.85);
-                transform-origin: center;
-                margin-bottom: -30px; 
-            }
+            .input-area { min-width: unset; width: 95vw; flex-wrap: wrap; justify-content: center; }
+            #mainInput { width: 100%; flex: none; margin-bottom: 8px; }
 
-            .input-area {
-                min-width: unset;
-                width: 95vw;
-                flex-wrap: wrap; /* 超出時換行 */
-                justify-content: center;
-                padding: 10px;
-            }
-
-            #mainInput {
-                width: 100%;
-                flex: none;
-                margin-bottom: 8px;
-            }
-
+            /* 隱藏原本下方的提示區，改為彈窗 */
             .clue-box {
-                width: 95vw;
-                max-width: unset;
-                min-width: unset;
-                height: auto; /* 直接滑到底看提示 */
-                padding: 20px;
+                display: none; 
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 90vw;
+                height: 80vh;
+                z-index: 1000;
+                box-shadow: 0 0 50px rgba(0,0,0,0.5);
             }
+            
+            .clue-box.active { display: block; }
+            
+            /* 遮罩層 */
+            #overlay {
+                display: none;
+                position: fixed;
+                top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.6);
+                z-index: 999;
+                backdrop-filter: blur(3px);
+            }
+            #overlay.active { display: block; }
         }
 
-        /* 小螢幕額外縮小 */
         @media (max-width: 400px) {
-            #grid { transform: scale(0.7); margin-bottom: -70px; }
-            h1 { font-size: 24px; }
+            #grid { transform: scale(0.68); margin-bottom: -80px; }
         }
     </style>
 </head>
-<body>
+<body onclick="closeClues(event)">
 
     <h1 id="game-title" onclick="handleTitleClick()">載入中...</h1>
+
+    <div id="clue-trigger" onclick="toggleClues(event)">🔍 查看題目提示</div>
+
+    <div id="overlay"></div>
 
     <div class="game-wrapper">
         <div class="left-column">
             <div id="grid"></div>
             <div class="input-area">
-                <input type="text" id="mainInput" placeholder="在此輸入文字" autocomplete="off">
-                <button class="btn-check" onclick="checkAnswers()">檢查答案</button>
+                <input type="text" id="mainInput" placeholder="點擊格子後在此輸入" autocomplete="off">
+                <button class="btn-check" onclick="checkAnswers()">檢查</button>
                 <button class="btn-hint" id="hintBtn" onclick="revealHint()">💡 <span id="hintCount">5</span></button>
                 <button class="btn-clear-one" onclick="clearCurrentCell()">🗑️</button>
                 <button class="btn-reset" onclick="location.reload()">清空</button>
             </div>
             <a href="index.html" class="back-link">← 返回選單</a>
         </div>
-        <div class="clue-box">
-            <h3 style="color:var(--secondary); border-bottom: 2px solid var(--bg-color); padding-bottom: 10px;">橫行提示</h3>
+
+        <div class="clue-box" id="clueBox">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 style="color:var(--secondary); margin:0;">題目提示</h2>
+                <span id="close-x" style="display:none; cursor:pointer; font-size:24px; color:#999;" onclick="toggleClues(event)">✕</span>
+            </div>
+            <h3 style="color:var(--primary); border-bottom: 2px solid #eee; padding-bottom: 5px;">橫行提示</h3>
             <div id="across-clues"></div>
-            <h3 style="color:var(--secondary); border-bottom: 2px solid var(--bg-color); padding-bottom: 10px; margin-top:30px;">直行提示</h3>
+            <h3 style="color:var(--primary); border-bottom: 2px solid #eee; padding-bottom: 5px; margin-top:20px;">直行提示</h3>
             <div id="down-clues"></div>
         </div>
     </div>
@@ -181,10 +192,28 @@
     const urlParams = new URLSearchParams(window.location.search);
     const issueId = urlParams.get('issue') || '001';
     let solutions = {}, labels = {}, size = 10, currentCell = null, titleClickCount = 0;
-    let isComposing = false; 
-    let startTime = Date.now();
-    let gameFinished = false;
-    let hintsRemaining = 5;
+    let isComposing = false, startTime = Date.now(), gameFinished = false, hintsRemaining = 5;
+
+    // 處理彈窗切換
+    function toggleClues(e) {
+        if(e) e.stopPropagation();
+        const box = document.getElementById('clueBox');
+        const overlay = document.getElementById('overlay');
+        const isMobile = window.innerWidth <= 900;
+        
+        if(isMobile) {
+            box.classList.toggle('active');
+            overlay.classList.toggle('active');
+            document.getElementById('close-x').style.display = box.classList.contains('active') ? 'block' : 'none';
+        }
+    }
+
+    function closeClues(e) {
+        const box = document.getElementById('clueBox');
+        if(box.classList.contains('active') && !box.contains(e.target)) {
+            toggleClues();
+        }
+    }
 
     const issueNum = parseInt(issueId);
     const startRange = Math.floor((issueNum - 1) / 10) * 10 + 1;
@@ -193,7 +222,7 @@
     const targetUrl = `./puzzles/${folder}/${issueId}.json`;
 
     fetch(targetUrl)
-        .then(res => { if (!res.ok) throw new Error("Load Fail"); return res.text(); })
+        .then(res => res.text())
         .then(encodedData => {
             const reversedData = encodedData.trim().split("").reverse().join("");
             const decodedData = decodeURIComponent(Array.prototype.map.call(atob(reversedData), function(c) {
@@ -211,10 +240,6 @@
             initGrid();
             renderClues("across-clues", data.clues.across);
             renderClues("down-clues", data.clues.down);
-        })
-        .catch(err => {
-            console.error(err);
-            document.getElementById('game-title').innerText = "關卡資料讀取失敗";
         });
 
     function initGrid() {
@@ -238,7 +263,7 @@
                     txt.className = 'cell-text';
                     txt.id = `text-${r}-${c}`;
                     cell.appendChild(txt);
-                    cell.onclick = () => selectCell(r, c);
+                    cell.onclick = (e) => { e.stopPropagation(); selectCell(r, c); };
                 }
                 grid.appendChild(cell);
             }
@@ -257,15 +282,8 @@
 
     const inputField = document.getElementById('mainInput');
     inputField.addEventListener('compositionstart', () => { isComposing = true; });
-    inputField.addEventListener('compositionend', (e) => {
-        isComposing = false;
-        fillChar(e.data);
-    });
-    inputField.addEventListener('input', (e) => {
-        if (!isComposing && e.inputType !== 'deleteContentBackward') {
-            fillChar(inputField.value);
-        }
-    });
+    inputField.addEventListener('compositionend', (e) => { isComposing = false; fillChar(e.data); });
+    inputField.addEventListener('input', (e) => { if (!isComposing && e.inputType !== 'deleteContentBackward') fillChar(inputField.value); });
 
     function fillChar(val) {
         if (!currentCell || !val) return;
@@ -276,36 +294,9 @@
         }
     }
 
-    document.addEventListener('keydown', (e) => {
-        if (!currentCell || isComposing) return;
-        if (e.key.startsWith("Arrow")) {
-            e.preventDefault();
-            let dr = 0, dc = 0;
-            if (e.key === "ArrowUp") dr = -1;
-            else if (e.key === "ArrowDown") dr = 1;
-            else if (e.key === "ArrowLeft") dc = -1;
-            else if (e.key === "ArrowRight") dc = 1;
-            moveSelection(dr, dc);
-        } else if (e.key === "Backspace" && document.activeElement !== inputField) {
-            clearCurrentCell();
-        }
-    });
-
-    function moveSelection(dr, dc) {
-        let nr = currentCell.r + dr, nc = currentCell.c + dc;
-        while (nr >= 1 && nr <= size && nc >= 1 && nc <= size) {
-            if (solutions[`${nr},${nc}`]) { selectCell(nr, nc); return; }
-            nr += dr; nc += dc;
-        }
-    }
-
     function checkAnswers() {
         if (gameFinished) return;
-        let totalCells = Object.keys(solutions).length;
-        let filledCount = 0;
-        let allCorrect = true;
-        let hasWrong = false;
-
+        let totalCells = Object.keys(solutions).length, filledCount = 0, allCorrect = true, hasWrong = false;
         for (let key in solutions) {
             const [r, c] = key.split(',');
             const cell = document.getElementById(`cell-${r}-${c}`);
@@ -313,47 +304,26 @@
             if (userAns !== "") filledCount++; 
             if (userAns !== solutions[key]) {
                 allCorrect = false;
-                if (userAns !== "") {
-                    hasWrong = true;
-                    cell.classList.add('wrong-flash');
-                    setTimeout(() => { cell.classList.remove('wrong-flash'); }, 1500);
-                }
+                if (userAns !== "") { hasWrong = true; cell.classList.add('wrong-flash'); setTimeout(() => { cell.classList.remove('wrong-flash'); }, 1500); }
             }
         }
-
         if (allCorrect) {
             gameFinished = true;
             const diff = Math.floor((Date.now() - startTime) / 1000);
-            const m = Math.floor(diff / 60);
-            const s = diff % 60;
-            const timeStr = m > 0 ? `${m} 分 ${s} 秒` : `${s} 秒`;
-            setTimeout(() => { alert(`恭喜通關！🎉\n本次挑戰耗時：${timeStr}`); }, 300);
+            alert(`恭喜通關！🎉\n挑戰耗時：${Math.floor(diff/60)}分${diff%60}秒`);
         } else {
-            const threshold = Math.ceil(totalCells / 2);
-            let message = filledCount >= threshold ? "帥喔，快搞定了！" : "加油，再接再厲！";
-            const errorNote = hasWrong ? "\n（裡面還有填錯的字喔！）" : "";
-            alert(`${message}\n目前進度：${filledCount} / ${totalCells}${errorNote}`);
+            const message = filledCount >= Math.ceil(totalCells/2) ? "帥喔，快搞定了！" : "加油，再接再厲！";
+            alert(`${message}\n進度：${filledCount} / ${totalCells}${hasWrong ? "\n(有填錯的字喔)" : ""}`);
         }
     }
 
     function revealHint() {
-        if (!currentCell || gameFinished) return;
-        if (hintsRemaining <= 0) {
-            alert("提示次數已用完！");
-            return;
-        }
+        if (!currentCell || gameFinished || hintsRemaining <= 0) return;
         const key = `${currentCell.r},${currentCell.c}`;
-        const targetText = document.getElementById(`text-${currentCell.r}-${currentCell.c}`);
-        if (targetText.innerText === solutions[key]) {
-            alert("這格已經是正確答案囉！");
-            return;
-        }
-        targetText.innerText = solutions[key];
+        if (document.getElementById(`text-${currentCell.r}-${currentCell.c}`).innerText === solutions[key]) return;
+        document.getElementById(`text-${currentCell.r}-${currentCell.c}`).innerText = solutions[key];
         hintsRemaining--;
         document.getElementById('hintCount').innerText = hintsRemaining;
-        if (hintsRemaining === 0) {
-            document.getElementById('hintBtn').disabled = true;
-        }
     }
 
     function renderClues(id, clues) {
@@ -363,46 +333,37 @@
             const div = document.createElement("div");
             div.className = "clue-item";
             div.innerHTML = `<span class="clue-num">${clue.num}</span>${clue.text}`;
-            div.onclick = () => {
+            div.onclick = (e) => {
+                e.stopPropagation();
                 for (let key in labels) {
                     let isMatch = false;
                     if (!isNaN(clue.num)) {
                         const regex = new RegExp(`(^|[^0-9])${clue.num}([^0-9]|$)`);
                         isMatch = regex.test(labels[key]);
-                    } else {
-                        isMatch = labels[key].includes(clue.num);
+                    } else { isMatch = labels[key].includes(clue.num); }
+                    if (isMatch) { 
+                        const [r, c] = key.split(",").map(Number); 
+                        selectCell(r, c); 
+                        if(window.innerWidth <= 900) toggleClues(); // 手機版點擊後自動關閉彈窗
+                        break; 
                     }
-                    if (isMatch) { const [r, c] = key.split(",").map(Number); selectCell(r, c); break; }
                 }
             };
             container.appendChild(div);
         });
     }
 
-    function clearCurrentCell() {
-        if (currentCell) document.getElementById(`text-${currentCell.r}-${currentCell.c}`).innerText = "";
-    }
-
+    function clearCurrentCell() { if (currentCell) document.getElementById(`text-${currentCell.r}-${currentCell.c}`).innerText = ""; }
     function handleTitleClick() {
         titleClickCount++;
         if (titleClickCount >= 3) {
-            const currentAnswers = {};
             for (let key in solutions) {
                 const [r, c] = key.split(',');
-                const txt = document.getElementById(`text-${r}-${c}`);
-                currentAnswers[key] = txt.innerText;
-                txt.innerText = solutions[key];
+                document.getElementById(`text-${r}-${c}`).innerText = solutions[key];
             }
-            setTimeout(() => {
-                for (let key in solutions) {
-                    const [r, c] = key.split(',');
-                    document.getElementById(`text-${r}-${c}`).innerText = currentAnswers[key];
-                }
-            }, 1250);
             titleClickCount = 0;
         }
     }
 </script>
-
 </body>
 </html>
