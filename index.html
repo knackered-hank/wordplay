@@ -6,38 +6,92 @@
     <title>韓哥填字遊戲</title>
     <style>
         :root { --bg-color: #fdfaf0; --primary: #e07a5f; --grid-bg: #333; }
-        body { font-family: "Microsoft JhengHei", sans-serif; background-color: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        body { 
+            font-family: "Microsoft JhengHei", sans-serif; 
+            background-color: var(--bg-color); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 40px 20px; /* 增加頂部間距 */
+        }
         
-        .menu-container { max-width: 800px; width: 100%; text-align: center; margin-top: 50px; }
+        /* 放大容器寬度 */
+        .menu-container { 
+            max-width: 1000px; 
+            width: 100%; 
+            text-align: center; 
+            margin-top: 30px; 
+        }
+
+        h1 { 
+            font-size: 42px; /* 標題放大 */
+            color: #3d405b;
+            margin-bottom: 10px;
+        }
+
+        p { 
+            font-size: 20px; /* 說明文字放大 */
+            color: #666;
+        }
+
+        hr {
+            border: 0;
+            height: 2px;
+            background: #eee;
+            margin: 30px 0;
+        }
         
+        /* 調整網格，增加間隙 */
         .level-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 15px;
-            margin-top: 30px;
+            gap: 25px; /* 間隙放大 */
+            margin-top: 40px;
         }
 
+        /* 放大關卡卡片尺寸 */
         .level-card { 
             background: white; 
-            padding: 25px 10px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+            padding: 40px 15px; /* 高度增加 */
+            border-radius: 16px; 
+            box-shadow: 0 6px 15px rgba(0,0,0,0.06); 
             cursor: pointer; 
-            transition: transform 0.2s, border 0.2s; 
+            transition: all 0.25s ease; 
             text-decoration: none; 
             display: flex; 
             align-items: center; 
             justify-content: center;
             color: inherit; 
-            border: 1px solid transparent;
+            border: 2px solid transparent; /* 增加邊框粗細感 */
         }
         
-        .level-card:hover { transform: translateY(-3px); border: 1px solid var(--primary); }
-        .level-card h2 { margin: 0; color: #3d405b; font-size: 1.2rem; }
+        /* 懸停效果增強 */
+        .level-card:hover { 
+            transform: translateY(-8px); 
+            border: 2px solid var(--primary); 
+            box-shadow: 0 12px 24px rgba(224, 122, 95, 0.15);
+        }
 
-        /* 手機版 */
-        @media (max-width: 600px) {
-            .level-grid { grid-template-columns: repeat(3, 1fr); }
+        /* 關卡數字放大 */
+        .level-card h2 { 
+            margin: 0; 
+            color: #3d405b; 
+            font-size: 2rem; /* 數字變大 */
+            font-weight: bold;
+        }
+
+        /* 手機版適應 */
+        @media (max-width: 768px) {
+            .level-grid { grid-template-columns: repeat(3, 1fr); gap: 15px; }
+            h1 { font-size: 32px; }
+        }
+
+        .footer { 
+            margin-top: 100px; 
+            font-size: 14px; 
+            color: #888; 
+            text-align: center; 
+            padding-bottom: 50px;
         }
     </style>
 </head>
@@ -50,9 +104,10 @@
         <div id="levelGrid" class="level-grid"></div>
     </div>
 
-    <div style="margin-top: 80px; font-size: 12px; color: #888; text-align: center;">◎2026 韓哥填字遊戲</div>
+    <div class="footer">◎2026 韓哥填字遊戲</div>
 
 <script>
+    // 目前到第 11 關
     const totalLevels = 11; 
 
     function toChinese(n) {
