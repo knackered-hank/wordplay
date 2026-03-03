@@ -13,26 +13,27 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 10px;
+            padding: 5px;
             margin: 0;
             min-height: 100vh;
             overflow-x: hidden;
         }
 
-        h1 { color: var(--secondary); margin: 10px 0 5px 0; font-size: 28px; text-align: center; }
+        h1 { color: var(--secondary); margin: 8px 0 5px 0; font-size: 26px; text-align: center; }
 
-        /* 新增：提示切換按鈕 (手機版顯示) */
+        /* 手機版專用：查看題目按鈕 */
         #clue-trigger {
             display: none;
             background: var(--secondary);
             color: white;
-            padding: 10px 20px;
+            padding: 8px 18px;
             border-radius: 20px;
             font-weight: bold;
-            margin-bottom: 15px;
+            margin-bottom: 5px;
             cursor: pointer;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             z-index: 100;
+            font-size: 15px;
         }
 
         .game-wrapper { 
@@ -49,7 +50,7 @@
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            gap: 15px; 
+            gap: 10px;
             flex: 0 0 auto;
             max-width: 100%;
         }
@@ -60,7 +61,6 @@
             border: 5px solid #333; 
             background-color: #333; 
             box-shadow: 0 12px 24px rgba(0,0,0,0.2);
-            transition: transform 0.3s;
         }
         .cell { width: 55px; height: 55px; position: relative; box-sizing: border-box; background-color: #333; }
         .white-cell { background-color: white; border: 1px solid #ccc; cursor: pointer; }
@@ -107,36 +107,42 @@
         .clue-item:hover { background-color: #fdf0d5; }
         .clue-num { font-weight: bold; color: var(--primary); margin-right: 10px; font-size: 18px; }
         
-        .back-link { margin-top: 15px; text-decoration: none; color: var(--secondary); font-size: 15px; font-weight: bold; }
-        footer { margin-top: 30px; font-size: 12px; color: #888; text-align: center; padding-bottom: 20px; }
+        .back-link { margin-top: 5px; text-decoration: none; color: var(--secondary); font-size: 15px; font-weight: bold; }
+        footer { margin: 20px 0; font-size: 12px; color: #888; text-align: center; }
 
-        /* --- 手機版彈窗式提示介面 --- */
+        /* --- 手機版緊湊優化 --- */
         @media (max-width: 900px) {
-            #clue-trigger { display: block; } /* 顯示按鈕 */
+            #clue-trigger { display: block; } 
             
-            .game-wrapper { flex-direction: column; align-items: center; }
+            .game-wrapper { flex-direction: column; align-items: center; gap: 0; }
             
-            #grid { transform: scale(0.85); margin-bottom: -20px; }
+            #grid { 
+                transform: scale(0.82); 
+                transform-origin: top center; /* 以頂部縮放，消除上方空白 */
+                margin-bottom: -50px; /* 強制將下方組件往上拉 */
+            }
 
-            .input-area { min-width: unset; width: 95vw; flex-wrap: wrap; justify-content: center; }
-            #mainInput { width: 100%; flex: none; margin-bottom: 8px; }
+            .input-area { 
+                min-width: unset; 
+                width: 95vw; 
+                flex-wrap: wrap; 
+                justify-content: center; 
+                padding: 10px;
+            }
+            #mainInput { width: 100%; flex: none; margin-bottom: 8px; height: 45px; }
 
-            /* 隱藏原本下方的提示區，改為彈窗 */
+            /* 彈窗樣式 */
             .clue-box {
                 display: none; 
                 position: fixed;
-                top: 50%;
-                left: 50%;
+                top: 50%; left: 50%;
                 transform: translate(-50%, -50%);
                 width: 90vw;
-                height: 80vh;
+                height: 75vh;
                 z-index: 1000;
                 box-shadow: 0 0 50px rgba(0,0,0,0.5);
             }
-            
             .clue-box.active { display: block; }
-            
-            /* 遮罩層 */
             #overlay {
                 display: none;
                 position: fixed;
@@ -149,7 +155,8 @@
         }
 
         @media (max-width: 400px) {
-            #grid { transform: scale(0.68); margin-bottom: -80px; }
+            #grid { transform: scale(0.65); margin-bottom: -100px; }
+            h1 { font-size: 22px; }
         }
     </style>
 </head>
@@ -194,14 +201,11 @@
     let solutions = {}, labels = {}, size = 10, currentCell = null, titleClickCount = 0;
     let isComposing = false, startTime = Date.now(), gameFinished = false, hintsRemaining = 5;
 
-    // 處理彈窗切換
     function toggleClues(e) {
         if(e) e.stopPropagation();
         const box = document.getElementById('clueBox');
         const overlay = document.getElementById('overlay');
-        const isMobile = window.innerWidth <= 900;
-        
-        if(isMobile) {
+        if(window.innerWidth <= 900) {
             box.classList.toggle('active');
             overlay.classList.toggle('active');
             document.getElementById('close-x').style.display = box.classList.contains('active') ? 'block' : 'none';
@@ -210,9 +214,7 @@
 
     function closeClues(e) {
         const box = document.getElementById('clueBox');
-        if(box.classList.contains('active') && !box.contains(e.target)) {
-            toggleClues();
-        }
+        if(box.classList.contains('active') && !box.contains(e.target)) toggleClues();
     }
 
     const issueNum = parseInt(issueId);
@@ -229,7 +231,6 @@
                 return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
             }).join(''));
             const data = JSON.parse(decodedData);
-
             document.getElementById('game-title').innerText = data.name;
             size = data.size || 10;
             data.cells.forEach(c => {
@@ -310,7 +311,7 @@
         if (allCorrect) {
             gameFinished = true;
             const diff = Math.floor((Date.now() - startTime) / 1000);
-            alert(`恭喜通關！🎉\n挑戰耗時：${Math.floor(diff/60)}分${diff%60}秒`);
+            alert(`恭喜通關！🎉\n耗時：${Math.floor(diff/60)}分${diff%60}秒`);
         } else {
             const message = filledCount >= Math.ceil(totalCells/2) ? "帥喔，快搞定了！" : "加油，再接再厲！";
             alert(`${message}\n進度：${filledCount} / ${totalCells}${hasWrong ? "\n(有填錯的字喔)" : ""}`);
@@ -344,7 +345,7 @@
                     if (isMatch) { 
                         const [r, c] = key.split(",").map(Number); 
                         selectCell(r, c); 
-                        if(window.innerWidth <= 900) toggleClues(); // 手機版點擊後自動關閉彈窗
+                        if(window.innerWidth <= 900) toggleClues(); 
                         break; 
                     }
                 }
