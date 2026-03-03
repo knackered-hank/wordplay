@@ -127,7 +127,7 @@
         <div class="left-column">
             <div id="grid"></div>
             <div class="input-area">
-                <input type="text" id="mainInput" placeholder="點擊格子後在此輸入">
+                <input type="text" id="mainInput" placeholder="輸入...">
                 <button class="btn-check" onclick="checkAnswers()">檢查</button>
                 <button class="btn-hint" onclick="revealHint()">💡 <span id="hintCount">5</span></button>
                 <button class="btn-clear-one" onclick="clearCurrentCell()">🗑️</button>
@@ -313,11 +313,11 @@
             const timeUsed = Math.floor((Date.now() - startTime) / 1000);
             const min = Math.floor(timeUsed / 60);
             const sec = timeUsed % 60;
-            msg.innerText = `恭喜通關！耗時 ${min} 分 ${sec} 秒`;
+            msg.innerText = `這麼猛喔！耗時 ${min} 分 ${sec} 秒`;
         } else if (correctCount >= halfCount) {
-            msg.innerText = "帥喔，快搞定了";
+            msg.innerText = "帥喔，快搞定了。";
         } else {
-            msg.innerText = "請再接再厲";
+            msg.innerText = "有點東西，再加把勁。";
         }
 
         modal.style.display = 'block';
