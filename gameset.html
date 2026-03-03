@@ -313,11 +313,11 @@
             const timeUsed = Math.floor((Date.now() - startTime) / 1000);
             const min = Math.floor(timeUsed / 60);
             const sec = timeUsed % 60;
-            msg.innerText = `這麼猛喔！耗時 ${min} 分 ${sec} 秒`;
+            msg.innerText = `帥帥帥！耗時 ${min} 分 ${sec} 秒`;
         } else if (correctCount >= halfCount) {
-            msg.innerText = "帥喔，快搞定了。";
+            msg.innerText = "你有點東西，快搞定了。";
         } else {
-            msg.innerText = "有點東西，再加把勁。";
+            msg.innerText = "再加把勁吧。";
         }
 
         modal.style.display = 'block';
