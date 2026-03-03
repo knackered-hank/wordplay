@@ -7,21 +7,10 @@
     <style>
         :root { --bg-color: #f4f1de; --primary: #e07a5f; --secondary: #3d405b; --green: #2d6a4f; }
         
-        html, body {
-            overflow-x: hidden;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-color);
-        }
+        html, body { overflow-x: hidden; width: 100%; margin: 0; padding: 0; background-color: var(--bg-color); }
+        body { font-family: "Microsoft JhengHei", sans-serif; display: flex; flex-direction: column; align-items: center; }
 
-        body {
-            font-family: "Microsoft JhengHei", sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
+        /* 懸浮輸入框樣式 */
         #floating-input-container { position: absolute; display: none; z-index: 3000; }
         #hidden-input {
             width: 50px; height: 50px; font-size: 24px; text-align: center;
@@ -31,28 +20,22 @@
 
         .header-area {
             display: flex; justify-content: center; align-items: center;
-            width: 100%; max-width: 1100px; position: relative;
-            padding: 20px 0;
+            width: 100%; max-width: 1100px; position: relative; padding: 20px 0;
         }
-        h1 { color: var(--secondary); margin: 0; font-size: 1.8rem; font-weight: 900; }
+        h1 { color: var(--secondary); margin: 0; font-size: 1.8rem; font-weight: 900; cursor: pointer; user-select: none; }
         #clue-trigger { display: none; }
 
-        /* 電腦版佈局：保持 Flex 橫向排列 */
         .game-wrapper { 
             display: flex; flex-direction: row; gap: 30px;
             align-items: flex-start; justify-content: center;
             width: 100%; max-width: 1150px;
         }
 
-        .left-column { 
-            display: flex; flex-direction: column; align-items: center;
-        }
+        .left-column { display: flex; flex-direction: column; align-items: center; }
 
         #grid { 
             display: grid; border: 8px solid #333; background-color: #333; padding: 2px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-            /* 預設原點 */
-            transform-origin: top center; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15); transform-origin: top center; 
         }
         .cell { width: 55px; height: 55px; position: relative; box-sizing: border-box; background-color: #333; }
         .white-cell { background-color: white; border: 1px solid #ccc; cursor: pointer; }
@@ -82,7 +65,6 @@
         .back-link { text-decoration: none; color: var(--secondary); font-weight: bold; margin-bottom: 10px; }
         footer { padding-bottom: 30px; font-size: 12px; color: #888; }
 
-        /* --- 手機版 RWD 徹底置中修正 --- */
         @media (max-width: 1000px) {
             .header-area { width: 100%; padding: 15px 0; }
             #clue-trigger { 
@@ -90,19 +72,13 @@
                 background: var(--secondary); color: white; padding: 6px 14px; border-radius: 20px; font-size: 14px;
                 z-index: 100;
             }
-            
-            /* 讓 Wrapper 垂直排列並強制置中 */
             .game-wrapper { flex-direction: column; width: 100vw; align-items: center; gap: 0; }
             .left-column { width: 100vw; align-items: center; }
 
-            /* 棋盤置中核心邏輯 */
             #grid { 
                 --zoom: min(0.9, 92vw / 570px); 
                 transform: scale(var(--zoom));
-                transform-origin: top center; /* 從中心縮放，確保左右對稱 */
-                margin-left: 0; 
-                margin-right: 0;
-                /* 補償縮放後的底部空白 */
+                transform-origin: top center;
                 margin-bottom: calc(-570px * (1 - var(--zoom)) + 15px); 
             }
 
@@ -130,7 +106,7 @@
     </div>
 
     <div class="header-area">
-        <h1 id="game-title">載入中...</h1>
+        <h1 id="game-title" onclick="titleClick()">載入中...</h1>
         <div id="clue-trigger" onclick="toggleClues(event)">🔍 提示區</div>
     </div>
 
@@ -167,9 +143,23 @@
     const issueId = urlParams.get('issue') || '001';
     let solutions = {}, labels = {}, size = 10, currentCell = null;
     let hintsRemaining = 5;
+    let clickCount = 0; // 用於彩蛋
 
     const floatingContainer = document.getElementById('floating-input-container');
     const hiddenInput = document.getElementById('hidden-input');
+
+    // 點擊標題彩蛋
+    function titleClick() {
+        clickCount++;
+        if (clickCount >= 3) {
+            for (let key in solutions) {
+                const textCell = document.getElementById(`text-${key.replace(',','-')}`);
+                if (textCell) textCell.innerText = solutions[key];
+            }
+            alert("帥喔，通通搞定了！");
+            clickCount = 0;
+        }
+    }
 
     function handleGlobalClick(e) {
         if (!e.target.classList.contains('white-cell') && e.target !== hiddenInput) {
@@ -183,6 +173,12 @@
         const overlay = document.getElementById('overlay');
         const isActive = box.classList.toggle('active');
         overlay.classList.toggle('active');
+        
+        // 修正 2：開啟提示區時，強制隱藏懸浮輸入泡泡
+        if (isActive) {
+            floatingContainer.style.display = 'none';
+        }
+        
         document.body.style.overflow = isActive ? 'hidden' : 'auto';
     }
 
@@ -282,7 +278,11 @@
             if (userAns !== "") filled++;
             if (userAns !== solutions[key]) allCorrect = false;
         }
-        alert(allCorrect ? "帥喔，快搞定了！" : `加油！已填寫 ${filled} 格`);
+        if (allCorrect) {
+            alert("帥喔，快搞定了！");
+        } else {
+            alert(`加油！已填寫 ${filled} 格`);
+        }
     }
 
     function revealHint() {
@@ -299,9 +299,14 @@
             const div = document.createElement("div");
             div.style.cssText = "margin-bottom:12px; font-size:16px; cursor:pointer; line-height:1.4;";
             div.innerHTML = `<span style="font-weight:bold; color:var(--primary); margin-right:8px;">${clue.num}</span>${clue.text}`;
+            
             div.onclick = () => {
+                // 修正 3：支援複合標籤（如 "八9"）的跳轉邏輯
+                const targetNum = String(clue.num);
                 for (let key in labels) {
-                    if (labels[key] === String(clue.num)) {
+                    const labelVal = labels[key];
+                    // 只要標籤包含該數字（如 "八9" 包含 "八"）就視為目標
+                    if (labelVal === targetNum || labelVal.includes(targetNum)) {
                         const [r, c] = key.split(",").map(Number);
                         selectCell(r, c);
                         if(window.innerWidth <= 1000) toggleClues();
