@@ -78,8 +78,14 @@
     const targetUrl = `./puzzles/${folder}/${issueId}.json`;
 
     fetch(targetUrl)
-        .then(res => { if (!res.ok) throw new Error("Load Fail"); return res.json(); })
-        .then(data => {
+        .then(res => { if (!res.ok) throw new Error("Load Fail"); return res.text(); })
+        .then(encodedData => {
+            const reversedData = encodedData.trim().split("").reverse().join("");
+            const decodedData = decodeURIComponent(Array.prototype.map.call(atob(reversedData), function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            const data = JSON.parse(decodedData);
+
             document.getElementById('game-title').innerText = data.name;
             size = data.size || 10;
             data.cells.forEach(c => {
@@ -92,7 +98,8 @@
             renderClues("down-clues", data.clues.down);
         })
         .catch(err => {
-            document.getElementById('game-title').innerText = "關卡還沒準備好喔 (404)";
+            console.error(err);
+            document.getElementById('game-title').innerText = "關卡資料讀取失敗";
         });
 
     function initGrid() {
@@ -177,10 +184,8 @@
         }
     }
 
-    // --- 修改後的檢查功能：進度判斷邏輯 ---
     function checkAnswers() {
         if (gameFinished) return;
-        
         let totalCells = Object.keys(solutions).length;
         let filledCount = 0;
         let allCorrect = true;
@@ -190,11 +195,7 @@
             const [r, c] = key.split(',');
             const cell = document.getElementById(`cell-${r}-${c}`);
             const userAns = document.getElementById(`text-${r}-${c}`).innerText.trim();
-            
-            if (userAns !== "") {
-                filledCount++; 
-            }
-
+            if (userAns !== "") filledCount++; 
             if (userAns !== solutions[key]) {
                 allCorrect = false;
                 if (userAns !== "") {
@@ -213,16 +214,8 @@
             const timeStr = m > 0 ? `${m} 分 ${s} 秒` : `${s} 秒`;
             setTimeout(() => { alert(`恭喜通關！🎉\n本次挑戰耗時：${timeStr}`); }, 300);
         } else {
-            // 進度訊息邏輯
-            let message = "";
-            const threshold = Math.ceil(totalCells / 2); // 總格數的一半 (無條件進位)
-
-            if (filledCount >= threshold) {
-                message = "帥喔，快搞定了！";
-            } else {
-                message = "加油，再接再厲！";
-            }
-
+            const threshold = Math.ceil(totalCells / 2);
+            let message = filledCount >= threshold ? "帥喔，快搞定了！" : "加油，再接再厲！";
             const errorNote = hasWrong ? "\n（裡面有填錯的字喔！）" : "";
             alert(`${message}\n目前進度：${filledCount} / ${totalCells}${errorNote}`);
         }
