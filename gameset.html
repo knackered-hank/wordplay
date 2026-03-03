@@ -5,26 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="page-title">韓哥填字遊戲</title>
     <style>
+        :root { --bg-color: #f4f1de; --primary: #e07a5f; --secondary: #3d405b; --green: #2d6a4f; }
+        
         body {
             font-family: "Microsoft JhengHei", sans-serif;
-            background-color: #f4f1de;
+            background-color: var(--bg-color);
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 20px;
             margin: 0;
             min-height: 100vh;
+            overflow-x: hidden; /* 防止左右滑動 */
         }
-        h1 { color: #3d405b; margin: 20px 0; cursor: default; user-select: none; font-size: 32px; text-align: center; }
+
+        h1 { color: var(--secondary); margin: 20px 0; cursor: default; user-select: none; font-size: 32px; text-align: center; }
         
-        /* 遊戲容器佈局 */
+        /* 遊戲主容器 */
         .game-wrapper { 
             display: flex; 
             gap: 30px; 
             align-items: flex-start; 
             justify-content: center; 
             max-width: 1400px; 
-            width: 95%;
+            width: 100%;
             flex: 1; 
         }
 
@@ -34,8 +38,10 @@
             align-items: center; 
             gap: 20px; 
             flex: 0 0 auto;
+            max-width: 100%;
         }
 
+        /* 題目格 */
         #grid { 
             display: grid; 
             border: 5px solid #333; 
@@ -44,12 +50,12 @@
         }
         .cell { width: 55px; height: 55px; position: relative; box-sizing: border-box; background-color: #333; }
         .white-cell { background-color: white; border: 1px solid #ccc; cursor: pointer; }
-        .selected { background-color: #f2cc8f !important; box-shadow: inset 0 0 0 4px #e07a5f; z-index: 5; }
+        .selected { background-color: #f2cc8f !important; box-shadow: inset 0 0 0 4px var(--primary); z-index: 5; }
         .wrong-flash { background-color: #f8d7da !important; box-shadow: inset 0 0 0 4px #dc3545 !important; }
-        .cell-text { color: #2d6a4f; pointer-events: none; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; }
+        .cell-text { color: var(--green); pointer-events: none; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; }
         .num-label { position: absolute; top: 2px; left: 4px; font-size: 11px; color: #666; font-weight: bold; pointer-events: none; }
 
-        /* 輸入區域 */
+        /* 輸入區域：電腦版 */
         .input-area { 
             width: 100%;
             min-width: 580px; 
@@ -58,7 +64,7 @@
             border-radius: 12px; 
             display: flex; 
             gap: 12px; 
-            border: 2px solid #3d405b; 
+            border: 2px solid var(--secondary); 
             box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
             box-sizing: border-box;
         }
@@ -73,11 +79,11 @@
         }
 
         button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold; color: white; font-size: 16px; white-space: nowrap; transition: 0.2s; }
-        .btn-check { background: #2d6a4f; flex: 0 0 auto; }
-        .btn-hint { background: #f4d35e; color: #3d405b; border: 1px solid #d1b44c; flex: 0 0 auto; }
+        .btn-check { background: var(--green); }
+        .btn-hint { background: #f4d35e; color: var(--secondary); border: 1px solid #d1b44c; }
         .btn-hint:disabled { background: #e9ecef; color: #adb5bd; border-color: #dee2e6; cursor: not-allowed; }
-        .btn-clear-one { background: #ffffff; color: #3d405b; border: 1px solid #ccc; flex: 0 0 auto; }
-        .btn-reset { background: #e07a5f; flex: 0 0 auto; }
+        .btn-clear-one { background: #ffffff; color: var(--secondary); border: 1px solid #ccc; }
+        .btn-reset { background: var(--primary); }
         button:hover { filter: brightness(0.9); }
 
         /* 提示區域 */
@@ -90,48 +96,58 @@
             border-radius: 15px; 
             height: 600px; 
             overflow-y: auto; 
-            border-top: 6px solid #e07a5f; 
+            border-top: 6px solid var(--primary); 
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
         .clue-item { margin-bottom: 15px; font-size: 17px; cursor: pointer; padding: 6px; border-radius: 6px; line-height: 1.5; }
-        .clue-item:hover { color: #e07a5f; background-color: #fdf0d5; }
-        .clue-num { font-weight: bold; color: #e07a5f; margin-right: 10px; font-size: 18px; }
+        .clue-item:hover { color: var(--primary); background-color: #fdf0d5; }
+        .clue-num { font-weight: bold; color: var(--primary); margin-right: 10px; font-size: 18px; }
         
-        .back-link { margin-top: 20px; text-decoration: none; color: #3d405b; font-size: 16px; font-weight: bold; }
+        .back-link { margin-top: 20px; text-decoration: none; color: var(--secondary); font-size: 16px; font-weight: bold; }
         footer { margin-top: 50px; font-size: 14px; color: #888; text-align: center; padding-bottom: 30px; }
 
-        /* --- 手機版響應式調整 --- */
+        /* --- 手機版自適應修正 --- */
         @media (max-width: 900px) {
             .game-wrapper {
-                flex-direction: column; /* 改為直向排列 */
+                flex-direction: column;
                 align-items: center;
                 gap: 40px;
             }
-            .left-column {
-                width: 100%;
-                max-width: 600px;
-            }
-            .input-area {
-                min-width: unset; /* 取消最小寬度限制 */
-                width: 100%;
-                padding: 10px;
-                gap: 8px;
-            }
-            #mainInput { font-size: 16px; padding: 8px; }
-            button { padding: 8px 12px; font-size: 14px; }
-            
-            .clue-box {
-                width: 100%;
-                max-width: 600px; /* 提示區與遊戲區域同寬 */
-                height: auto; /* 手機版高度隨內容撐開，不用內部滾動 */
-                min-height: 400px;
-                flex: none;
-            }
+
+            /* 根據寬度自動縮小網格 */
             #grid {
-                /* 縮小手機版的格子，避免超出螢幕 */
-                transform: scale(0.9);
-                transform-origin: top center;
+                transform: scale(0.85);
+                transform-origin: center;
+                margin-bottom: -30px; 
             }
+
+            .input-area {
+                min-width: unset;
+                width: 95vw;
+                flex-wrap: wrap; /* 超出時換行 */
+                justify-content: center;
+                padding: 10px;
+            }
+
+            #mainInput {
+                width: 100%;
+                flex: none;
+                margin-bottom: 8px;
+            }
+
+            .clue-box {
+                width: 95vw;
+                max-width: unset;
+                min-width: unset;
+                height: auto; /* 直接滑到底看提示 */
+                padding: 20px;
+            }
+        }
+
+        /* 小螢幕額外縮小 */
+        @media (max-width: 400px) {
+            #grid { transform: scale(0.7); margin-bottom: -70px; }
+            h1 { font-size: 24px; }
         }
     </style>
 </head>
@@ -143,7 +159,7 @@
         <div class="left-column">
             <div id="grid"></div>
             <div class="input-area">
-                <input type="text" id="mainInput" placeholder="點擊格子後在此輸入" autocomplete="off">
+                <input type="text" id="mainInput" placeholder="在此輸入文字" autocomplete="off">
                 <button class="btn-check" onclick="checkAnswers()">檢查答案</button>
                 <button class="btn-hint" id="hintBtn" onclick="revealHint()">💡 <span id="hintCount">5</span></button>
                 <button class="btn-clear-one" onclick="clearCurrentCell()">🗑️</button>
@@ -152,9 +168,9 @@
             <a href="index.html" class="back-link">← 返回選單</a>
         </div>
         <div class="clue-box">
-            <h3 style="color:#3d405b; border-bottom: 2px solid #f4f1de; padding-bottom: 10px;">橫行提示</h3>
+            <h3 style="color:var(--secondary); border-bottom: 2px solid var(--bg-color); padding-bottom: 10px;">橫行提示</h3>
             <div id="across-clues"></div>
-            <h3 style="color:#3d405b; border-bottom: 2px solid #f4f1de; padding-bottom: 10px; margin-top:30px;">直行提示</h3>
+            <h3 style="color:var(--secondary); border-bottom: 2px solid var(--bg-color); padding-bottom: 10px; margin-top:30px;">直行提示</h3>
             <div id="down-clues"></div>
         </div>
     </div>
@@ -387,5 +403,6 @@
         }
     }
 </script>
+
 </body>
 </html>
