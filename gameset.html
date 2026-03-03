@@ -8,8 +8,8 @@
         :root { --bg-color: #f4f1de; --primary: #e07a5f; --secondary: #3d405b; --green: #2d6a4f; }
         
         html, body {
-            overflow-x: hidden; /* 絕對禁止左右滑動 */
-            width: 100vw;
+            overflow-x: hidden;
+            width: 100%;
             margin: 0;
             padding: 0;
             background-color: var(--bg-color);
@@ -37,7 +37,7 @@
         h1 { color: var(--secondary); margin: 0; font-size: 1.8rem; font-weight: 900; }
         #clue-trigger { display: none; }
 
-        /* 電腦版佈局 */
+        /* 電腦版佈局：保持 Flex 橫向排列 */
         .game-wrapper { 
             display: flex; flex-direction: row; gap: 30px;
             align-items: flex-start; justify-content: center;
@@ -51,6 +51,8 @@
         #grid { 
             display: grid; border: 8px solid #333; background-color: #333; padding: 2px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            /* 預設原點 */
+            transform-origin: top center; 
         }
         .cell { width: 55px; height: 55px; position: relative; box-sizing: border-box; background-color: #333; }
         .white-cell { background-color: white; border: 1px solid #ccc; cursor: pointer; }
@@ -77,33 +79,35 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.1); box-sizing: border-box;
         }
 
-        .back-link { text-decoration: none; color: var(--secondary); font-weight: bold; margin-bottom: 20px; }
+        .back-link { text-decoration: none; color: var(--secondary); font-weight: bold; margin-bottom: 10px; }
         footer { padding-bottom: 30px; font-size: 12px; color: #888; }
 
-        /* --- 手機版修正：解決右偏與自動填滿 --- */
+        /* --- 手機版 RWD 徹底置中修正 --- */
         @media (max-width: 1000px) {
-            .header-area { width: 100vw; padding: 15px 0; }
+            .header-area { width: 100%; padding: 15px 0; }
             #clue-trigger { 
-                display: block; position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-                background: var(--secondary); color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px;
+                display: block; position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+                background: var(--secondary); color: white; padding: 6px 14px; border-radius: 20px; font-size: 14px;
+                z-index: 100;
             }
             
-            /* 強制容器寬度為 100% 避免右偏移 */
+            /* 讓 Wrapper 垂直排列並強制置中 */
             .game-wrapper { flex-direction: column; width: 100vw; align-items: center; gap: 0; }
-            .left-column { width: 100vw; align-items: center; overflow: visible; }
+            .left-column { width: 100vw; align-items: center; }
 
-            /* 核心：自動計算縮放與邊距以達成絕對置中 */
+            /* 棋盤置中核心邏輯 */
             #grid { 
-                --zoom: min(0.88, 92vw / 570px); /* 570px 是棋盤原始寬度 */
+                --zoom: min(0.9, 92vw / 570px); 
                 transform: scale(var(--zoom));
-                transform-origin: top left;
-                /* 關鍵計算：(螢幕寬度 - (棋盤寬度 * 縮放比例)) / 2 */
-                margin-left: calc((100vw - (570px * var(--zoom))) / 2); 
-                margin-bottom: calc(-570px * (1 - var(--zoom)) + 20px); 
+                transform-origin: top center; /* 從中心縮放，確保左右對稱 */
+                margin-left: 0; 
+                margin-right: 0;
+                /* 補償縮放後的底部空白 */
+                margin-bottom: calc(-570px * (1 - var(--zoom)) + 15px); 
             }
 
             #mainInput { display: none; }
-            .input-area { width: 90vw; margin: 10px auto; padding: 10px; }
+            .input-area { width: 92vw; margin: 10px auto; padding: 10px; justify-content: center; }
             
             .clue-box {
                 display: none; position: fixed; top: 50%; left: 50%;
@@ -159,7 +163,6 @@
     </div>
 
 <script>
-    // 此處腳本邏輯保持不變，維持你的資料載入、格子點擊與輸入功能
     const urlParams = new URLSearchParams(window.location.search);
     const issueId = urlParams.get('issue') || '001';
     let solutions = {}, labels = {}, size = 10, currentCell = null;
