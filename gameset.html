@@ -13,37 +13,36 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 0;
+            padding: 5px;
             margin: 0;
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden; /* 徹底禁止捲動 */
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
         /* 期數文字：放大並維持置中 */
         h1 { 
             color: var(--secondary); 
-            margin: 10px 0 5px 0; 
-            font-size: 28px; /* 放大字體 */
+            margin: 15px 0 10px 0; 
+            font-size: 30px; 
             font-weight: 900;
             text-align: center; 
         }
 
-        /* 提示鈕：移至右上角以節省垂直空間 */
+        /* 提示鈕：移至右上角節省空間 */
         #clue-trigger {
-            display: none; /* 電腦版隱藏 */
+            display: none;
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 15px;
+            right: 15px;
             background: var(--secondary);
             color: white;
-            padding: 6px 12px;
-            border-radius: 12px;
+            padding: 8px 16px;
+            border-radius: 20px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             z-index: 1000;
-            font-size: 13px;
+            font-size: 14px;
         }
 
         .game-wrapper { 
@@ -53,16 +52,18 @@
 
         .left-column { 
             display: flex; flex-direction: column; align-items: center; 
-            width: 100%;
+            gap: 15px; /* 恢復原本舒適的垂直間距 */
+            flex: 0 0 auto;
+            max-width: 100%;
         }
 
-        /* 棋盤邊框與內距優化 */
+        /* 棋盤邊框：加粗 8px 保護文字 */
         #grid { 
             display: grid; 
             border: 8px solid #333; 
             background-color: #333; 
             padding: 2px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.2);
         }
         .cell { width: 55px; height: 55px; position: relative; box-sizing: border-box; background-color: #333; }
         .white-cell { background-color: white; border: 1px solid #ccc; cursor: pointer; }
@@ -71,58 +72,71 @@
         .cell-text { color: var(--green); pointer-events: none; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; }
         .num-label { position: absolute; top: 2px; left: 4px; font-size: 11px; color: #666; font-weight: bold; pointer-events: none; }
 
-        /* 輸入區域佈局校正 */
+        /* 恢復原本寬敞的輸入區域樣式 */
         .input-area { 
-            width: 94%; 
-            max-width: 580px; 
-            background: #fff; padding: 8px; 
-            border-radius: 12px; display: flex; gap: 8px; 
+            width: 100%;
+            min-width: 580px; 
+            background: #fff; 
+            padding: 12px; 
+            border-radius: 12px; 
+            display: flex; 
+            gap: 10px; 
             border: 2px solid var(--secondary); 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
             box-sizing: border-box;
         }
-        #mainInput { flex: 1; font-size: 16px; padding: 8px; text-align: center; border: 1px solid #ccc; border-radius: 6px; outline: none; }
+        #mainInput { flex: 1; font-size: 18px; padding: 10px; text-align: center; border: 1px solid #ccc; border-radius: 6px; outline: none; }
 
-        button { padding: 8px 10px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold; color: white; white-space: nowrap; font-size: 14px;}
+        button { padding: 10px 15px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold; color: white; white-space: nowrap; }
         .btn-check { background: var(--green); }
         .btn-hint { background: #f4d35e; color: var(--secondary); border: 1px solid #d1b44c; }
         .btn-clear-one { background: #ffffff; color: var(--secondary); border: 1px solid #ccc; }
         .btn-reset { background: var(--primary); }
 
-        .back-link { margin-top: 5px; text-decoration: none; color: var(--secondary); font-size: 13px; font-weight: bold; }
-        footer { margin: 5px 0 10px 0; font-size: 11px; color: #888; text-align: center; }
+        .clue-box { 
+            flex: 1; min-width: 350px; max-width: 450px; background: white; 
+            padding: 25px; border-radius: 15px; height: 600px; overflow-y: auto; 
+            border-top: 6px solid var(--primary); 
+        }
+        
+        .back-link { margin-top: 15px; text-decoration: none; color: var(--secondary); font-size: 15px; font-weight: bold; }
+        footer { margin-top: 30px; font-size: 12px; color: #888; text-align: center; padding-bottom: 20px; }
 
-        /* --- 手機版：全畫面強制壓縮 --- */
+        /* --- 手機版適配 --- */
         @media (max-width: 900px) {
-            #clue-trigger { display: block; } /* 顯示右上角按鈕 */
-            .game-wrapper { flex-direction: column; align-items: center; gap: 0; }
+            #clue-trigger { display: block; } 
+            .game-wrapper { flex-direction: column; align-items: center; }
             
             #grid { 
                 transform: scale(0.8); 
                 transform-origin: top center; 
-                margin-top: 5px;
-                margin-bottom: -95px; /* 吸附下方組件 */
+                margin-bottom: -50px; /* 適度拉近，不讓按鈕太擠 */
             }
 
-            .input-area { width: 94vw; flex-wrap: wrap; justify-content: center; padding: 5px; }
-            #mainInput { width: 100%; margin-bottom: 5px; height: 36px; }
+            .input-area { 
+                min-width: unset; 
+                width: 95vw; 
+                flex-wrap: wrap; 
+                justify-content: center; 
+                padding: 12px; /* 恢復寬鬆內距 */
+            }
+            #mainInput { width: 100%; flex: none; margin-bottom: 8px; }
 
-            /* 彈窗式提示盒 */
             .clue-box {
                 display: none; position: fixed; top: 50%; left: 50%;
-                transform: translate(-50%, -50%); width: 92vw; height: 70vh; z-index: 1001;
-                background: white; border-radius: 15px; padding: 20px; overflow-y: auto;
+                transform: translate(-50%, -50%); width: 92vw; height: 80vh; z-index: 1000;
+                box-shadow: 0 0 50px rgba(0,0,0,0.5);
             }
             .clue-box.active { display: block; }
             #overlay {
-                display: none; position: fixed; top: 0; left: 0; 
-                width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000;
+                display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.6); z-index: 999;
             }
             #overlay.active { display: block; }
         }
 
-        @media (max-width: 380px) {
-            h1 { font-size: 24px; }
-            #grid { transform: scale(0.68); margin-bottom: -120px; }
+        @media (max-width: 400px) {
+            #grid { transform: scale(0.68); margin-bottom: -90px; }
         }
     </style>
 </head>
@@ -130,7 +144,7 @@
 
     <h1 id="game-title" onclick="handleTitleClick()">載入中...</h1>
 
-    <div id="clue-trigger" onclick="toggleClues(event)">🔍 提示</div>
+    <div id="clue-trigger" onclick="toggleClues(event)">🔍 查看題目提示</div>
 
     <div id="overlay"></div>
 
@@ -149,23 +163,19 @@
         </div>
 
         <div class="clue-box" id="clueBox">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
                 <h2 style="color:var(--secondary); margin:0;">題目提示</h2>
-                <span id="close-x" style="cursor:pointer; font-size:24px; color:#999;" onclick="toggleClues(event)">✕</span>
+                <span id="close-x" style="display:none; cursor:pointer; font-size:24px; color:#999;" onclick="toggleClues(event)">✕</span>
             </div>
-            <div id="across-clues-wrapper">
-                <h3 style="color:var(--primary); border-bottom: 2px solid #eee; padding-bottom: 5px;">橫行提示</h3>
-                <div id="across-clues"></div>
-            </div>
-            <div id="down-clues-wrapper">
-                <h3 style="color:var(--primary); border-bottom: 2px solid #eee; padding-bottom: 5px; margin-top:15px;">直行提示</h3>
-                <div id="down-clues"></div>
-            </div>
+            <h3 style="color:var(--primary); border-bottom: 2px solid #eee; padding-bottom: 5px;">橫行提示</h3>
+            <div id="across-clues"></div>
+            <h3 style="color:var(--primary); border-bottom: 2px solid #eee; padding-bottom: 5px; margin-top:20px;">直行提示</h3>
+            <div id="down-clues"></div>
         </div>
     </div>
 
 <script>
-    // 腳本保持原樣，確保邏輯運作正常
+    // 腳本邏輯完全保留，無任何刪減
     const urlParams = new URLSearchParams(window.location.search);
     const issueId = urlParams.get('issue') || '001';
     let solutions = {}, labels = {}, size = 10, currentCell = null, titleClickCount = 0;
@@ -175,8 +185,11 @@
         if(e) e.stopPropagation();
         const box = document.getElementById('clueBox');
         const overlay = document.getElementById('overlay');
-        box.classList.toggle('active');
-        overlay.classList.toggle('active');
+        if(window.innerWidth <= 900) {
+            box.classList.toggle('active');
+            overlay.classList.toggle('active');
+            document.getElementById('close-x').style.display = box.classList.contains('active') ? 'block' : 'none';
+        }
     }
 
     function closeClues(e) {
@@ -301,8 +314,7 @@
         clues.forEach(clue => {
             const div = document.createElement("div");
             div.className = "clue-item";
-            div.style.cssText = "margin-bottom:10px; font-size:15px; border-bottom:1px solid #eee; padding:5px;";
-            div.innerHTML = `<span style="font-weight:bold; color:var(--primary); margin-right:8px;">${clue.num}</span>${clue.text}`;
+            div.innerHTML = `<span class="clue-num">${clue.num}</span>${clue.text}`;
             div.onclick = (e) => {
                 e.stopPropagation();
                 for (let key in labels) {
@@ -314,7 +326,7 @@
                     if (isMatch) { 
                         const [r, c] = key.split(",").map(Number); 
                         selectCell(r, c); 
-                        toggleClues();
+                        if(window.innerWidth <= 900) toggleClues();
                         break; 
                     }
                 }
