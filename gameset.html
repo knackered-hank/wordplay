@@ -10,7 +10,15 @@
         html, body { overflow-x: hidden; width: 100%; margin: 0; padding: 0; background-color: var(--bg-color); }
         body { font-family: "Microsoft JhengHei", sans-serif; display: flex; flex-direction: column; align-items: center; }
 
-        /* 懸浮輸入框樣式 */
+        /* 標題樣式：防止選取與點擊陰影 */
+        h1 { 
+            color: var(--secondary); margin: 0; font-size: 1.8rem; font-weight: 900; 
+            cursor: pointer; 
+            user-select: none; /* 防止電腦版藍色選取效果 */
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent; /* 防止手機版點擊灰色陰影 */
+        }
+
         #floating-input-container { position: absolute; display: none; z-index: 3000; }
         #hidden-input {
             width: 50px; height: 50px; font-size: 24px; text-align: center;
@@ -22,7 +30,6 @@
             display: flex; justify-content: center; align-items: center;
             width: 100%; max-width: 1100px; position: relative; padding: 20px 0;
         }
-        h1 { color: var(--secondary); margin: 0; font-size: 1.8rem; font-weight: 900; cursor: pointer; user-select: none; }
         #clue-trigger { display: none; }
 
         .game-wrapper { 
@@ -143,20 +150,45 @@
     const issueId = urlParams.get('issue') || '001';
     let solutions = {}, labels = {}, size = 10, currentCell = null;
     let hintsRemaining = 5;
-    let clickCount = 0; // 用於彩蛋
+    let clickCount = 0;
+    let clickTimer = null;
 
     const floatingContainer = document.getElementById('floating-input-container');
     const hiddenInput = document.getElementById('hidden-input');
 
-    // 點擊標題彩蛋
+    // 核心修正 1 & 2：點擊三下閃現答案 1.25 秒
     function titleClick() {
         clickCount++;
+        clearTimeout(clickTimer);
+        
+        // 3秒內沒點完就重置計數
+        clickTimer = setTimeout(() => { clickCount = 0; }, 3000);
+
         if (clickCount >= 3) {
+            floatingContainer.style.display = 'none'; // 閃現時隱藏泡泡比較乾淨
+            
+            const snapshot = {};
+            // 1. 紀錄現狀並填入正確答案
             for (let key in solutions) {
-                const textCell = document.getElementById(`text-${key.replace(',','-')}`);
-                if (textCell) textCell.innerText = solutions[key];
+                const id = key.replace(',', '-');
+                const textEl = document.getElementById(`text-${id}`);
+                if (textEl) {
+                    snapshot[key] = textEl.innerText; // 存下玩家填的字
+                    textEl.innerText = solutions[key]; // 換成正確答案
+                }
             }
-            alert("帥喔，通通搞定了！");
+
+            // 2. 1.25 秒後還原
+            setTimeout(() => {
+                for (let key in solutions) {
+                    const id = key.replace(',', '-');
+                    const textEl = document.getElementById(`text-${id}`);
+                    if (textEl) {
+                        textEl.innerText = snapshot[key]; // 還原玩家填的字
+                    }
+                }
+            }, 1250);
+
             clickCount = 0;
         }
     }
@@ -173,12 +205,7 @@
         const overlay = document.getElementById('overlay');
         const isActive = box.classList.toggle('active');
         overlay.classList.toggle('active');
-        
-        // 修正 2：開啟提示區時，強制隱藏懸浮輸入泡泡
-        if (isActive) {
-            floatingContainer.style.display = 'none';
-        }
-        
+        if (isActive) floatingContainer.style.display = 'none'; // 按提示區時泡泡消失
         document.body.style.overflow = isActive ? 'hidden' : 'auto';
     }
 
@@ -278,11 +305,8 @@
             if (userAns !== "") filled++;
             if (userAns !== solutions[key]) allCorrect = false;
         }
-        if (allCorrect) {
-            alert("帥喔，快搞定了！");
-        } else {
-            alert(`加油！已填寫 ${filled} 格`);
-        }
+        if (allCorrect) alert("帥喔，快搞定了！");
+        else alert(`加油！已填寫 ${filled} 格`);
     }
 
     function revealHint() {
@@ -299,14 +323,10 @@
             const div = document.createElement("div");
             div.style.cssText = "margin-bottom:12px; font-size:16px; cursor:pointer; line-height:1.4;";
             div.innerHTML = `<span style="font-weight:bold; color:var(--primary); margin-right:8px;">${clue.num}</span>${clue.text}`;
-            
             div.onclick = () => {
-                // 修正 3：支援複合標籤（如 "八9"）的跳轉邏輯
                 const targetNum = String(clue.num);
                 for (let key in labels) {
-                    const labelVal = labels[key];
-                    // 只要標籤包含該數字（如 "八9" 包含 "八"）就視為目標
-                    if (labelVal === targetNum || labelVal.includes(targetNum)) {
+                    if (labels[key] === targetNum || labels[key].includes(targetNum)) {
                         const [r, c] = key.split(",").map(Number);
                         selectCell(r, c);
                         if(window.innerWidth <= 1000) toggleClues();
