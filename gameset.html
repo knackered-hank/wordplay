@@ -12,7 +12,7 @@
 
         h1 { 
             color: var(--secondary); margin: 0; font-size: 1.8rem; font-weight: 900; 
-            cursor: default; /* 改回預設鼠標 */
+            cursor: default; 
             user-select: auto; 
             -webkit-tap-highlight-color: transparent;
         }
@@ -155,11 +155,13 @@
     let solutions = {}, labels = {}, size = 10, currentCell = null;
     let hintsRemaining = 5, clickCount = 0, clickTimer = null;
     let startTime = Date.now();
+    let isComposing = false; // 新增：追蹤中文輸入組字狀態
 
     const floatingContainer = document.getElementById('floating-input-container');
     const hiddenInput = document.getElementById('hidden-input');
+    const mainInput = document.getElementById('mainInput');
 
-    // 計算資料夾路徑 (每 10 個一組)
+    // 資料夾路徑計算
     const numId = parseInt(issueId);
     const rangeStart = Math.floor((numId - 1) / 10) * 10 + 1;
     const rangeEnd = rangeStart + 9;
@@ -176,7 +178,7 @@
     }
 
     document.addEventListener('keydown', (e) => {
-        if (!currentCell) return;
+        if (!currentCell || isComposing) return;
         if (document.getElementById('custom-modal').style.display === 'block') return;
         if (document.getElementById('clueBox').classList.contains('active')) return;
         if (e.key === "ArrowUp") { e.preventDefault(); moveSelection(-1, 0); }
@@ -207,7 +209,7 @@
     }
 
     function handleGlobalClick(e) {
-        if (!e.target.classList.contains('white-cell') && e.target !== hiddenInput && e.target !== document.getElementById('mainInput')) {
+        if (!e.target.classList.contains('white-cell') && e.target !== hiddenInput && e.target !== mainInput) {
             floatingContainer.style.display = 'none';
         }
     }
@@ -222,7 +224,6 @@
         document.body.style.overflow = isActive ? 'hidden' : 'auto';
     }
 
-    // 修正後的動態路徑 Fetch
     fetch(`./puzzles/${folderName}/${issueId}.json`)
     .then(res => {
         if (!res.ok) throw new Error("找不到檔案");
@@ -282,6 +283,7 @@
         const targetCell = document.getElementById(`cell-${r}-${c}`);
         targetCell.classList.add('selected');
         const rect = targetCell.getBoundingClientRect();
+        
         if (window.innerWidth <= 1000) {
             floatingContainer.style.display = 'block';
             floatingContainer.style.left = `${rect.left + (rect.width / 2) - 25}px`;
@@ -289,30 +291,46 @@
             hiddenInput.value = "";
             hiddenInput.focus();
         } else {
-            const input = document.getElementById('mainInput');
-            input.value = "";
-            input.focus();
+            mainInput.value = "";
+            mainInput.focus();
         }
     }
 
+    // 核心填字邏輯
     function fillChar(val) {
         if (!currentCell || !val) return;
         const lastChar = val.trim().slice(-1);
         if (lastChar) {
             document.getElementById(`text-${currentCell.r}-${currentCell.c}`).innerText = lastChar;
-            // 移除自動跳格功能，輸入完後停留在原地
         }
     }
 
-    hiddenInput.addEventListener('input', () => {
-        fillChar(hiddenInput.value);
-        if (hiddenInput.value) setTimeout(() => { floatingContainer.style.display = 'none'; }, 300);
-    });
+    // 處理中文組字鎖定
+    const setupInputLock = (el, isMobile) => {
+        el.addEventListener('compositionstart', () => { isComposing = true; });
+        el.addEventListener('compositionend', (e) => { 
+            isComposing = false; 
+            // 選完字後填入
+            fillChar(el.value);
+            if (isMobile) {
+                setTimeout(() => { floatingContainer.style.display = 'none'; }, 300);
+            } else {
+                el.value = "";
+            }
+        });
+        el.addEventListener('input', () => {
+            if (isComposing) return; // 鎖定中不執行
+            fillChar(el.value);
+            if (isMobile && el.value) {
+                setTimeout(() => { floatingContainer.style.display = 'none'; }, 300);
+            } else if (!isMobile) {
+                el.value = "";
+            }
+        });
+    };
 
-    document.getElementById('mainInput').addEventListener('input', (e) => {
-        fillChar(e.target.value);
-        e.target.value = "";
-    });
+    setupInputLock(hiddenInput, true);
+    setupInputLock(mainInput, false);
 
     function checkAnswers() {
         let correctCount = 0;
