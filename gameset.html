@@ -155,13 +155,12 @@
     let solutions = {}, labels = {}, size = 10, currentCell = null;
     let hintsRemaining = 5, clickCount = 0, clickTimer = null;
     let startTime = Date.now();
-    let isComposing = false; // 新增：追蹤中文輸入組字狀態
+    let isComposing = false; // 追蹤組字狀態
 
     const floatingContainer = document.getElementById('floating-input-container');
     const hiddenInput = document.getElementById('hidden-input');
     const mainInput = document.getElementById('mainInput');
 
-    // 資料夾路徑計算
     const numId = parseInt(issueId);
     const rangeStart = Math.floor((numId - 1) / 10) * 10 + 1;
     const rangeEnd = rangeStart + 9;
@@ -296,7 +295,6 @@
         }
     }
 
-    // 核心填字邏輯
     function fillChar(val) {
         if (!currentCell || !val) return;
         const lastChar = val.trim().slice(-1);
@@ -305,12 +303,10 @@
         }
     }
 
-    // 處理中文組字鎖定
     const setupInputLock = (el, isMobile) => {
         el.addEventListener('compositionstart', () => { isComposing = true; });
-        el.addEventListener('compositionend', (e) => { 
+        el.addEventListener('compositionend', () => { 
             isComposing = false; 
-            // 選完字後填入
             fillChar(el.value);
             if (isMobile) {
                 setTimeout(() => { floatingContainer.style.display = 'none'; }, 300);
@@ -319,7 +315,7 @@
             }
         });
         el.addEventListener('input', () => {
-            if (isComposing) return; // 鎖定中不執行
+            if (isComposing) return;
             fillChar(el.value);
             if (isMobile && el.value) {
                 setTimeout(() => { floatingContainer.style.display = 'none'; }, 300);
@@ -354,9 +350,9 @@
         prog.innerText = `[ ${correctCount} / ${totalCells} ]`;
         if (correctCount === totalCells) {
             const timeUsed = Math.floor((Date.now() - startTime) / 1000);
-            msg.innerText = `帥喔，快搞定了，全對恭喜通關！耗時 ${Math.floor(timeUsed/60)}分${timeUsed%60}秒`;
+            msg.innerText = `全對！耗時 ${Math.floor(timeUsed/60)}分${timeUsed%60}秒`;
         } else if (correctCount >= halfCount) {
-            msg.innerText = "帥喔，快搞定了";
+            msg.innerText = "快搞定了！";
         } else {
             msg.innerText = "再接再厲";
         }
@@ -387,7 +383,8 @@
             div.onclick = () => {
                 const targetNum = String(clue.num);
                 for (let key in labels) {
-                    if (labels[key] === targetNum || labels[key].includes(targetNum)) {
+                    // 修正精確匹配邏輯：確保標籤完全等於目標數字
+                    if (labels[key] === targetNum) {
                         const [r, c] = key.split(",").map(Number);
                         selectCell(r, c);
                         if(window.innerWidth <= 1000) toggleClues();
